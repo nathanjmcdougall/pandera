@@ -4,15 +4,16 @@ This class should implement a common interface of operations needed for
 data validation. These operations are exposed as methods that are composed
 together to implement the pandera schema specification.
 """
+from __future__ import annotations
 
 import inspect
 from abc import ABC
 from functools import wraps
-from typing import Any, Dict, Tuple, Type, Optional, Union
+from typing import Any, Dict, Optional, Tuple, Type, Union
 
 from pandera.backends.base import BaseSchemaBackend
-from pandera.errors import BackendNotFoundError
 from pandera.dtypes import DataType
+from pandera.errors import BackendNotFoundError
 
 DtypeInputTypes = Union[str, type, DataType, Type]
 

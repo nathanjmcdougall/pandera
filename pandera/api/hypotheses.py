@@ -1,4 +1,5 @@
 """Data validation checks for hypothesis testing."""
+from __future__ import annotations
 
 from typing import Any, Callable, Dict, List, Optional, TypeVar, Union
 

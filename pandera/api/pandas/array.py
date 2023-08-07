@@ -1,4 +1,5 @@
 """Core pandas array specification."""
+from __future__ import annotations
 
 import copy
 import warnings

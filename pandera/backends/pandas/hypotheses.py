@@ -1,4 +1,5 @@
 """Hypothesis backend for pandas."""
+from __future__ import annotations
 
 from functools import partial
 from typing import Any, Callable, Dict, Union, cast

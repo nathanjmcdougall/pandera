@@ -1,21 +1,20 @@
 """Nox sessions."""
+from __future__ import annotations
+
 # isort: skip_file
 import os
 import re
 import shutil
 import sys
+from distutils.core import run_setup
 from typing import Dict, List
+
+import nox
 
 # setuptools must be imported before distutils !
 import setuptools
-from distutils.core import (
-    run_setup,
-)
-
-import nox
 from nox import Session
 from pkg_resources import Requirement, parse_requirements
-
 
 nox.options.sessions = (
     "requirements",

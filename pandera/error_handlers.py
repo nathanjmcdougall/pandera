@@ -1,8 +1,9 @@
 """Handle schema errors."""
+from __future__ import annotations
 
 from typing import List, Optional
 
-from pandera.errors import SchemaError, SchemaErrors, SchemaErrorReason
+from pandera.errors import SchemaError, SchemaErrorReason, SchemaErrors
 
 
 class SchemaErrorHandler:

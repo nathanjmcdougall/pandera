@@ -1,5 +1,5 @@
 """Common typing functionality."""
-# pylint:disable=abstract-method,too-many-ancestors,invalid-name
+from __future__ import annotations
 
 import inspect
 from typing import TYPE_CHECKING, Any, Generic, Optional, Type, TypeVar, Union
@@ -9,6 +9,9 @@ import typing_inspect
 
 from pandera import dtypes
 from pandera.engines import numpy_engine, pandas_engine
+
+# pylint:disable=abstract-method,too-many-ancestors,invalid-name
+
 
 Bool = dtypes.Bool  #: ``"bool"`` numpy dtype
 Date = dtypes.Date  #: ``datetime.date`` object dtype

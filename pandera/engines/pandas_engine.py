@@ -1,11 +1,6 @@
 """Pandas engine and data types."""
-# pylint:disable=too-many-ancestors
+from __future__ import annotations
 
-# docstrings are inherited
-# pylint:disable=missing-class-docstring
-
-# pylint doesn't know about __init__ generated with dataclass
-# pylint:disable=unexpected-keyword-arg,no-value-for-parameter
 import builtins
 import dataclasses
 import datetime
@@ -41,6 +36,14 @@ from pandera.engines.type_aliases import (
 )
 from pandera.engines.utils import pandas_version
 from pandera.system import FLOAT_128_AVAILABLE
+
+# pylint doesn't know about __init__ generated with dataclass
+# pylint:disable=unexpected-keyword-arg,no-value-for-parameter
+# pylint:disable=too-many-ancestors
+
+# docstrings are inherited
+# pylint:disable=missing-class-docstring
+
 
 try:
     import pyarrow  # pylint: disable=unused-import

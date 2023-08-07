@@ -1,4 +1,5 @@
 """Check backend for pyspark."""
+from __future__ import annotations
 
 from functools import partial
 from typing import Dict, List, Optional

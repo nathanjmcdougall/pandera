@@ -1,5 +1,6 @@
 """Custom accessor functionality for PySpark.Sql. Register pyspark accessor for pandera schema metadata.
 """
+from __future__ import annotations
 
 import warnings
 from typing import Optional

@@ -1,10 +1,12 @@
-# pylint: disable=missing-function-docstring
 """Pandas implementation of built-in hypotheses."""
+from __future__ import annotations
 
 from typing import Tuple
 
 from pandera.api.extensions import register_builtin_hypothesis
 from pandera.backends.pandas.builtin_checks import PandasData
+
+# pylint: disable=missing-function-docstring
 
 
 @register_builtin_hypothesis(

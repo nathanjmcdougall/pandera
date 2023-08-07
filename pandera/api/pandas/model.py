@@ -1,4 +1,5 @@
 """Class-based api for pandas models."""
+from __future__ import annotations
 
 import copy
 import inspect

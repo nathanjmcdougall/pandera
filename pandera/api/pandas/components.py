@@ -1,4 +1,5 @@
 """Core pandas schema component specifications."""
+from __future__ import annotations
 
 import warnings
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union, cast

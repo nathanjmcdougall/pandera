@@ -1,4 +1,5 @@
 """Data validation base check."""
+from __future__ import annotations
 
 import inspect
 from itertools import chain

@@ -1,4 +1,5 @@
 """Extensions module."""
+from __future__ import annotations
 
 import inspect
 import warnings

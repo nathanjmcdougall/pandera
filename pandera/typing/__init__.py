@@ -3,6 +3,7 @@
 For backwards compatibility, pandas types are exposed to the top-level scope of
 the typing module.
 """
+from __future__ import annotations
 
 from typing import Set, Type
 
@@ -49,7 +50,6 @@ from pandera.typing.common import (
     UInt64,
 )
 from pandera.typing.pandas import DataFrame, Index, Series
-
 
 DATAFRAME_TYPES: Set[Type] = {DataFrame}
 SERIES_TYPES: Set[Type] = {Series}

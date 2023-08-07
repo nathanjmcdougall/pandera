@@ -1,4 +1,20 @@
 """PySpark engine and data types."""
+from __future__ import annotations
+
+import dataclasses
+import inspect
+import re
+import sys
+import warnings
+from typing import Any, Iterable, Optional, Union
+
+import pyspark.sql.types as pst
+
+from pandera import dtypes, errors
+from pandera.dtypes import immutable
+from pandera.engines import engine
+from pandera.engines.type_aliases import PysparkObject
+
 # pylint:disable=too-many-ancestors,no-member
 
 # docstrings are inherited
@@ -7,19 +23,6 @@
 # pylint doesn't know about __init__ generated with dataclass
 # pylint:disable=unexpected-keyword-arg,no-value-for-parameter
 
-import dataclasses
-import inspect
-import re
-import warnings
-from typing import Any, Iterable, Union, Optional
-import sys
-
-import pyspark.sql.types as pst
-
-from pandera import dtypes, errors
-from pandera.dtypes import immutable
-from pandera.engines import engine
-from pandera.engines.type_aliases import PysparkObject
 
 try:
     import pyarrow  # pylint:disable=unused-import

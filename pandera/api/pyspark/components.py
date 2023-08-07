@@ -1,4 +1,5 @@
 """Core pyspark schema component specifications."""
+from __future__ import annotations
 
 from typing import Any, Dict, Iterable, Optional, Tuple, Union
 

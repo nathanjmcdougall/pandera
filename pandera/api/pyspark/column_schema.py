@@ -1,4 +1,5 @@
 """Core pyspark column specification."""
+from __future__ import annotations
 
 import copy
 from typing import Any, List, Optional, TypeVar, cast

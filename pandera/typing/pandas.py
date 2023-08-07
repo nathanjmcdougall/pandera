@@ -1,4 +1,6 @@
 """Typing definitions and helpers."""
+from __future__ import annotations
+
 # pylint:disable=abstract-method,disable=too-many-ancestors
 import functools
 import io

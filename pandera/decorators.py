@@ -1,4 +1,6 @@
 """Decorators for integrating pandera into existing data pipelines."""
+from __future__ import annotations
+
 import functools
 import inspect
 import sys

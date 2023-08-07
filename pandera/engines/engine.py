@@ -1,4 +1,6 @@
 """Data types engine interface."""
+from __future__ import annotations
+
 # https://github.com/PyCQA/pylint/issues/3268
 # pylint:disable=no-value-for-parameter
 import functools
@@ -24,7 +26,6 @@ from typing import (
 import typing_inspect
 
 from pandera.dtypes import DataType
-
 
 # register different TypedDict type depending on python version
 if sys.version_info >= (3, 9):
