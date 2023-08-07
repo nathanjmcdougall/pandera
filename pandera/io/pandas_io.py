@@ -1,4 +1,5 @@
 """Module for reading and writing schema objects."""
+from __future__ import annotations
 
 import json
 import warnings

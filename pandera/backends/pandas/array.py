@@ -1,12 +1,13 @@
 """Pandera array backends."""
+from __future__ import annotations
 
-from typing import cast, List, Optional
+from typing import List, Optional, cast
 
 import pandas as pd
 from multimethod import DispatchError
 
-from pandera.backends.base import CoreCheckResult
 from pandera.api.pandas.types import is_field
+from pandera.backends.base import CoreCheckResult
 from pandera.backends.pandas.base import PandasSchemaBackend
 from pandera.backends.pandas.error_formatters import (
     reshape_failure_cases,
@@ -17,10 +18,10 @@ from pandera.engines.pandas_engine import Engine
 from pandera.error_handlers import SchemaErrorHandler
 from pandera.errors import (
     ParserError,
+    SchemaDefinitionError,
     SchemaError,
     SchemaErrorReason,
     SchemaErrors,
-    SchemaDefinitionError,
 )
 
 

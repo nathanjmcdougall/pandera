@@ -1,4 +1,3 @@
-# pylint: disable=missing-function-docstring
 """Built-in check functions base implementation.
 
 This module contains check function abstract definitions that correspond to
@@ -7,7 +6,9 @@ implement any validation logic and serve as the entrypoint for dispatching
 specific implementations based on the data object type, e.g.
 `pandas.DataFrame`s.
 """
+from __future__ import annotations
 
+# pylint: disable=missing-function-docstring
 import re
 from typing import Any, Iterable, TypeVar, Union
 

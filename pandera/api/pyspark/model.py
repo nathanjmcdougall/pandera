@@ -1,4 +1,6 @@
 """Class-based api for pyspark models."""
+from __future__ import annotations
+
 # pylint:disable=abstract-method
 import copy
 import inspect

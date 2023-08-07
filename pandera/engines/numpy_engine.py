@@ -1,4 +1,6 @@
 """Numpy engine and data types."""
+from __future__ import annotations
+
 # docstrings are inherited
 # pylint:disable=missing-class-docstring,too-many-ancestors
 import builtins

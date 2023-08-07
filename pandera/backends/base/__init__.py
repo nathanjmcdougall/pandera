@@ -4,6 +4,7 @@ These classes implement a common interface of operations needed for
 data validation. These operations are exposed as methods that are composed
 together to implement the pandera schema specification.
 """
+from __future__ import annotations
 
 from abc import ABC
 from typing import Any, Dict, List, NamedTuple, Optional, Union

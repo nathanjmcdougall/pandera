@@ -1,4 +1,5 @@
 """Base module for `hypothesis`-based strategies for data synthesis."""
+from __future__ import annotations
 
 from typing import Callable, Dict, Tuple, Type
 

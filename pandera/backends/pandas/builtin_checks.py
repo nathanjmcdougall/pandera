@@ -1,4 +1,5 @@
 """Pandas implementation of built-in checks"""
+from __future__ import annotations
 
 import operator
 import re

@@ -1,4 +1,6 @@
 """Module for inferring the statistics of pandas objects."""
+from __future__ import annotations
+
 import warnings
 from typing import Any, Dict, Union
 

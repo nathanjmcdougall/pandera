@@ -1,4 +1,3 @@
-# pylint: disable=no-value-for-parameter,too-many-lines
 """Generate synthetic data from a schema definition.
 
 *new in 0.6.0*
@@ -10,6 +9,9 @@ to compose strategies given multiple checks specified in a schema.
 
 See the :ref:`user guide<data synthesis strategies>` for more details.
 """
+from __future__ import annotations
+
+# pylint: disable=no-value-for-parameter,too-many-lines
 import operator
 import re
 import warnings
@@ -51,7 +53,6 @@ try:
     import hypothesis.strategies as st
     from hypothesis.strategies import SearchStrategy, composite
 except ImportError:  # pragma: no cover
-
     T = TypeVar("T")
 
     # pylint: disable=too-few-public-methods

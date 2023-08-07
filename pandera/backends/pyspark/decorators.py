@@ -1,4 +1,5 @@
 """This module holds the decorators only valid for pyspark"""
+from __future__ import annotations
 
 import functools
 import warnings

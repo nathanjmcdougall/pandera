@@ -1,4 +1,3 @@
-# pylint: disable=missing-function-docstring
 """Built-in hypothesis functions base implementation.
 
 This module contains hypothesis function abstract definitions that
@@ -7,7 +6,9 @@ actually implement any validation logic and serve as the entrypoint for
 dispatching specific implementations based on the data object type, e.g.
 `pandas.DataFrame`s.
 """
+from __future__ import annotations
 
+# pylint: disable=missing-function-docstring
 from typing import Any, Tuple
 
 from pandera.api.hypotheses import Hypothesis
