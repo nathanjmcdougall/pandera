@@ -2,11 +2,11 @@
 import pandas as pd
 
 from pandera import (
-    Column,
-    DataFrameSchema,
     Bool,
     Category,
     Check,
+    Column,
+    DataFrameSchema,
     DateTime,
     Float,
     Int,

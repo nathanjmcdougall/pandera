@@ -10,12 +10,8 @@ from collections import OrderedDict
 from typing import (
     Any,
     Callable,
-    Dict,
     Iterable,
-    List,
     NoReturn,
-    Optional,
-    Tuple,
     TypeVar,
     Union,
     cast,
@@ -42,7 +38,7 @@ OutputGetter = Union[str, int, Callable]
 F = TypeVar("F", bound=Callable)
 
 
-def _get_fn_argnames(fn: Callable) -> List[str]:
+def _get_fn_argnames(fn: Callable) -> list[str]:
     """Get argument names of a function.
 
     :param fn: get argument names for this function.
@@ -83,7 +79,7 @@ def _get_fn_argnames(fn: Callable) -> List[str]:
 def _handle_schema_error(
     decorator_name,
     fn: Callable,
-    schema: Union[DataFrameSchema, SeriesSchema],
+    schema: DataFrameSchema | SeriesSchema,
     data_obj: Any,
     schema_error: errors.SchemaError,
 ) -> NoReturn:
@@ -104,7 +100,7 @@ def _handle_schema_error(
 def _parse_schema_error(
     decorator_name,
     fn: Callable,
-    schema: Union[DataFrameSchema, SeriesSchema],
+    schema: DataFrameSchema | SeriesSchema,
     data_obj: Any,
     schema_error: errors.SchemaError,
 ) -> NoReturn:
@@ -133,11 +129,11 @@ def _parse_schema_error(
 
 def check_input(
     schema: Schemas,
-    obj_getter: Optional[InputGetter] = None,
-    head: Optional[int] = None,
-    tail: Optional[int] = None,
-    sample: Optional[int] = None,
-    random_state: Optional[int] = None,
+    obj_getter: InputGetter | None = None,
+    head: int | None = None,
+    tail: int | None = None,
+    sample: int | None = None,
+    random_state: int | None = None,
     lazy: bool = False,
     inplace: bool = False,
 ) -> Callable[[F], F]:
@@ -203,9 +199,9 @@ def check_input(
     @wrapt.decorator
     def _wrapper(
         fn: Callable,
-        instance: Union[None, Any],
-        args: Tuple[Any, ...],
-        kwargs: Dict[str, Any],
+        instance: None | Any,
+        args: tuple[Any, ...],
+        kwargs: dict[str, Any],
     ):
         # pylint: disable=unused-argument
         """Check pandas DataFrame or Series before calling the function.
@@ -271,11 +267,11 @@ def check_input(
 
 def check_output(
     schema: Schemas,
-    obj_getter: Optional[OutputGetter] = None,
-    head: Optional[int] = None,
-    tail: Optional[int] = None,
-    sample: Optional[int] = None,
-    random_state: Optional[int] = None,
+    obj_getter: OutputGetter | None = None,
+    head: int | None = None,
+    tail: int | None = None,
+    sample: int | None = None,
+    random_state: int | None = None,
     lazy: bool = False,
     inplace: bool = False,
 ) -> Callable[[F], F]:
@@ -387,9 +383,9 @@ def check_output(
     @wrapt.decorator
     def _wrapper(
         fn: Callable,
-        instance: Union[None, Any],
-        args: Tuple[Any, ...],
-        kwargs: Dict[str, Any],
+        instance: None | Any,
+        args: tuple[Any, ...],
+        kwargs: dict[str, Any],
     ):
         # pylint: disable=unused-argument
         """Check pandas DataFrame or Series before calling the function.
@@ -424,11 +420,9 @@ def check_io(
     random_state: int = None,
     lazy: bool = False,
     inplace: bool = False,
-    out: Union[
-        Schemas,
-        Tuple[OutputGetter, Schemas],
-        List[Tuple[OutputGetter, Schemas]],
-    ] = None,
+    out: Schemas
+    | tuple[OutputGetter, Schemas]
+    | list[tuple[OutputGetter, Schemas]] = None,
     **inputs: Schemas,
 ) -> Callable[[F], F]:
     """Check schema for multiple inputs and outputs.
@@ -463,9 +457,9 @@ def check_io(
     @wrapt.decorator
     def _wrapper(
         fn: Callable,
-        instance: Union[None, Any],  # pylint: disable=unused-argument
-        args: Tuple[Any, ...],
-        kwargs: Dict[str, Any],
+        instance: None | Any,  # pylint: disable=unused-argument
+        args: tuple[Any, ...],
+        kwargs: dict[str, Any],
     ):
         """Check pandas DataFrame or Series before calling the function.
 
@@ -514,10 +508,10 @@ def check_types(
     wrapped: F,
     *,
     with_pydantic: bool = False,
-    head: Optional[int] = None,
-    tail: Optional[int] = None,
-    sample: Optional[int] = None,
-    random_state: Optional[int] = None,
+    head: int | None = None,
+    tail: int | None = None,
+    sample: int | None = None,
+    random_state: int | None = None,
     lazy: bool = False,
     inplace: bool = False,
 ) -> F:
@@ -529,10 +523,10 @@ def check_types(
     wrapped: None = None,
     *,
     with_pydantic: bool = False,
-    head: Optional[int] = None,
-    tail: Optional[int] = None,
-    sample: Optional[int] = None,
-    random_state: Optional[int] = None,
+    head: int | None = None,
+    tail: int | None = None,
+    sample: int | None = None,
+    random_state: int | None = None,
     lazy: bool = False,
     inplace: bool = False,
 ) -> Callable[[F], F]:
@@ -543,10 +537,10 @@ def check_types(
     wrapped=None,
     *,
     with_pydantic: bool = False,
-    head: Optional[int] = None,
-    tail: Optional[int] = None,
-    sample: Optional[int] = None,
-    random_state: Optional[int] = None,
+    head: int | None = None,
+    tail: int | None = None,
+    sample: int | None = None,
+    random_state: int | None = None,
     lazy: bool = False,
     inplace: bool = False,
 ) -> Callable:
@@ -585,9 +579,9 @@ def check_types(
         )
 
     # Front-load annotation parsing
-    annotated_schema_models: Dict[
+    annotated_schema_models: dict[
         str,
-        Iterable[Tuple[Union[SchemaModel, None], Union[AnnotationInfo, None]]],
+        Iterable[tuple[SchemaModel | None, AnnotationInfo | None]],
     ] = {}
     for arg_name_, annotation in typing.get_type_hints(wrapped).items():
         annotation_info = AnnotationInfo(annotation)
@@ -694,17 +688,17 @@ def check_types(
 
     sig = inspect.signature(wrapped)
 
-    def validate_args(arguments: Dict[str, Any]) -> Dict[str, Any]:
+    def validate_args(arguments: dict[str, Any]) -> dict[str, Any]:
         return {
             arg_name: _check_arg(arg_name, arg_value)
             for arg_name, arg_value in arguments.items()
         }
 
     def validate_inputs(
-        instance: Optional[Any],
-        args: Tuple[Any, ...],
-        kwargs: Dict[str, Any],
-    ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+        instance: Any | None,
+        args: tuple[Any, ...],
+        kwargs: dict[str, Any],
+    ) -> tuple[dict[str, Any], dict[str, Any]]:
         if instance is not None:
             # If the wrapped function is a method -> add "self" as the first positional arg
             args = (instance, *args)
@@ -725,9 +719,9 @@ def check_types(
         @wrapt.decorator
         async def _wrapper(
             wrapped_: Callable,
-            instance: Optional[Any],
-            args: Tuple[Any, ...],
-            kwargs: Dict[str, Any],
+            instance: Any | None,
+            args: tuple[Any, ...],
+            kwargs: dict[str, Any],
         ):
             if with_pydantic:
                 out = await validate_arguments(wrapped_)(*args, **kwargs)
@@ -743,9 +737,9 @@ def check_types(
         @wrapt.decorator
         def _wrapper(
             wrapped_: Callable,
-            instance: Optional[Any],
-            args: Tuple[Any, ...],
-            kwargs: Dict[str, Any],
+            instance: Any | None,
+            args: tuple[Any, ...],
+            kwargs: dict[str, Any],
         ):
             if with_pydantic:
                 out = validate_arguments(wrapped_)(*args, **kwargs)

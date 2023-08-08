@@ -4,12 +4,8 @@ from __future__ import annotations
 import warnings
 from typing import (
     Any,
-    Dict,
-    FrozenSet,
     Iterable,
-    List,
     NamedTuple,
-    Optional,
     TypeVar,
     Union,
 )
@@ -29,10 +25,10 @@ class ColumnInfo(NamedTuple):
     """Column metadata used during validation."""
 
     sorted_column_names: Iterable
-    expanded_column_names: FrozenSet
-    destuttered_column_names: List
-    absent_column_names: List
-    lazy_exclude_column_names: List
+    expanded_column_names: frozenset
+    destuttered_column_names: list
+    absent_column_names: list
+    lazy_exclude_column_names: list
 
 
 FieldCheckObj = Union[col, DataFrame]
@@ -52,10 +48,10 @@ class PysparkSchemaBackend(BaseSchemaBackend):
     def subsample(
         self,
         check_obj: DataFrame,
-        head: Optional[int] = None,
-        tail: Optional[int] = None,
-        sample: Optional[float] = None,
-        random_state: Optional[int] = None,
+        head: int | None = None,
+        tail: int | None = None,
+        sample: float | None = None,
+        random_state: int | None = None,
     ):
         if sample is not None:
             return check_obj.sample(
@@ -108,7 +104,7 @@ class PysparkSchemaBackend(BaseSchemaBackend):
     def failure_cases_metadata(
         self,
         schema_name: str,
-        schema_errors: List[Dict[str, Any]],
+        schema_errors: list[dict[str, Any]],
     ) -> FailureCaseMetadata:
         """Create failure cases metadata required for SchemaErrors exception."""
 

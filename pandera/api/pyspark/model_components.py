@@ -4,12 +4,7 @@ from __future__ import annotations
 from typing import (
     Any,
     Callable,
-    Dict,
     Iterable,
-    Optional,
-    Set,
-    Tuple,
-    Type,
     TypeVar,
     Union,
     cast,
@@ -43,7 +38,7 @@ class FieldInfo(BaseFieldInfo):
     def _to_schema_component(
         self,
         dtype: PySparkDtypeInputTypes,
-        component: Type[SchemaComponent],
+        component: type[SchemaComponent],
         checks: CheckArg = None,
         **kwargs: Any,
     ) -> SchemaComponent:
@@ -75,7 +70,7 @@ class FieldInfo(BaseFieldInfo):
         )
 
     @property
-    def properties(self) -> Dict[str, Any]:
+    def properties(self) -> dict[str, Any]:
         """Get column properties."""
 
         return {
@@ -99,14 +94,14 @@ def Field(
     ge: Any = None,
     lt: Any = None,
     le: Any = None,
-    in_range: Dict[str, Any] = None,
+    in_range: dict[str, Any] = None,
     isin: Iterable = None,
     notin: Iterable = None,
-    str_contains: Optional[str] = None,
-    str_endswith: Optional[str] = None,
-    str_length: Optional[Dict[str, Any]] = None,
-    str_matches: Optional[str] = None,
-    str_startswith: Optional[str] = None,
+    str_contains: str | None = None,
+    str_endswith: str | None = None,
+    str_length: dict[str, Any] | None = None,
+    str_matches: str | None = None,
+    str_startswith: str | None = None,
     nullable: bool = False,
     unique: bool = False,
     coerce: bool = False,
@@ -115,11 +110,11 @@ def Field(
     raise_warning: bool = False,
     n_failure_cases: int = None,
     alias: Any = None,
-    check_name: Optional[bool] = None,
-    dtype_kwargs: Optional[Dict[str, Any]] = None,
-    title: Optional[str] = None,
-    description: Optional[str] = None,
-    metadata: Optional[dict] = None,
+    check_name: bool | None = None,
+    dtype_kwargs: dict[str, Any] | None = None,
+    title: str | None = None,
+    description: str | None = None,
+    metadata: dict | None = None,
     **kwargs,
 ) -> Any:
     """Used to provide extra information about a field of a DataFrameModel.
@@ -226,7 +221,7 @@ class FieldCheckInfo(CheckInfo):  # pylint:disable=too-few-public-methods
 
     def __init__(
         self,
-        fields: Set[Union[str, FieldInfo]],
+        fields: set[str | FieldInfo],
         check_fn: AnyCallable,
         regex: bool = False,
         **check_kwargs: Any,
@@ -237,8 +232,8 @@ class FieldCheckInfo(CheckInfo):  # pylint:disable=too-few-public-methods
 
 
 def _to_function_and_classmethod(
-    fn: Union[AnyCallable, classmethod]
-) -> Tuple[AnyCallable, classmethod]:
+    fn: AnyCallable | classmethod,
+) -> tuple[AnyCallable, classmethod]:
     if isinstance(fn, classmethod):
         fn, method = fn.__func__, cast(classmethod, fn)
     else:
@@ -263,7 +258,7 @@ def check(*fields, regex: bool = False, **check_kwargs) -> ClassCheck:
     :param check_kwargs: Keywords arguments forwarded to Check.
     """
 
-    def _wrapper(fn: Union[classmethod, AnyCallable]) -> classmethod:
+    def _wrapper(fn: classmethod | AnyCallable) -> classmethod:
         check_fn, check_method = _to_function_and_classmethod(fn)
         check_kwargs.setdefault("description", fn.__doc__)
         setattr(
@@ -290,7 +285,7 @@ def dataframe_check(_fn=None, **check_kwargs) -> ClassCheck:
     :param check_kwargs: Keywords arguments forwarded to Check.
     """
 
-    def _wrapper(fn: Union[classmethod, AnyCallable]) -> classmethod:
+    def _wrapper(fn: classmethod | AnyCallable) -> classmethod:
         check_fn, check_method = _to_function_and_classmethod(fn)
         check_kwargs.setdefault("description", fn.__doc__)
         setattr(

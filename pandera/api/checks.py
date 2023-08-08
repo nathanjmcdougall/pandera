@@ -2,16 +2,9 @@
 from __future__ import annotations
 
 import re
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    Iterable,
-    List,
-    Optional,
-    TypeVar,
-    Union,
-)
+from typing import Any, Callable, Iterable, TypeVar
+
+from typing_extensions import Self
 
 from pandera import errors
 from pandera.api.base.checks import BaseCheck, CheckResult
@@ -27,18 +20,18 @@ class Check(BaseCheck):
     def __init__(
         self,
         check_fn: Callable,
-        groups: Optional[Union[str, List[str]]] = None,
-        groupby: Optional[Union[str, List[str], Callable]] = None,
+        groups: str | list[str] | None = None,
+        groupby: str | list[str] | Callable | None = None,
         ignore_na: bool = True,
         element_wise: bool = False,
-        name: Optional[str] = None,
-        error: Optional[str] = None,
+        name: str | None = None,
+        error: str | None = None,
         raise_warning: bool = False,
-        n_failure_cases: Optional[int] = None,
-        title: Optional[str] = None,
-        description: Optional[str] = None,
-        statistics: Dict[str, Any] = None,
-        strategy: Optional[SearchStrategy] = None,
+        n_failure_cases: int | None = None,
+        title: str | None = None,
+        description: str | None = None,
+        statistics: dict[str, Any] = None,
+        strategy: SearchStrategy | None = None,
         **check_kwargs,
     ) -> None:
         """Apply a validation function to a data object.
@@ -191,7 +184,7 @@ class Check(BaseCheck):
         self.groupby = groupby
         if isinstance(groups, str):
             groups = [groups]
-        self.groups: Optional[List[str]] = groups
+        self.groups: list[str] | None = groups
 
         self.statistics = statistics or check_kwargs or {}
         self.statistics_args = [*self.statistics.keys()]
@@ -200,7 +193,7 @@ class Check(BaseCheck):
     def __call__(
         self,
         check_obj: Any,
-        column: Optional[str] = None,
+        column: str | None = None,
     ) -> CheckResult:
         # pylint: disable=too-many-branches
         """Validate pandas DataFrame or Series.
@@ -228,7 +221,7 @@ class Check(BaseCheck):
         return backend(check_obj, column)
 
     @classmethod
-    def equal_to(cls, value: Any, **kwargs) -> "Check":
+    def equal_to(cls, value: Any, **kwargs) -> Self:
         """Ensure all elements of a data container equal a certain value.
 
         :param value: values in this pandas data structure must be
@@ -242,7 +235,7 @@ class Check(BaseCheck):
         )
 
     @classmethod
-    def not_equal_to(cls, value: Any, **kwargs) -> "Check":
+    def not_equal_to(cls, value: Any, **kwargs) -> Self:
         """Ensure no elements of a data container equals a certain value.
 
         :param value: This value must not occur in the checked
@@ -256,7 +249,7 @@ class Check(BaseCheck):
         )
 
     @classmethod
-    def greater_than(cls, min_value: Any, **kwargs) -> "Check":
+    def greater_than(cls, min_value: Any, **kwargs) -> Self:
         """
         Ensure values of a data container are strictly greater than a minimum
         value.
@@ -275,7 +268,7 @@ class Check(BaseCheck):
         )
 
     @classmethod
-    def greater_than_or_equal_to(cls, min_value: Any, **kwargs) -> "Check":
+    def greater_than_or_equal_to(cls, min_value: Any, **kwargs) -> Self:
         """Ensure all values are greater or equal a certain value.
 
         :param min_value: Allowed minimum value for values of a series. Must be
@@ -292,7 +285,7 @@ class Check(BaseCheck):
         )
 
     @classmethod
-    def less_than(cls, max_value: Any, **kwargs) -> "Check":
+    def less_than(cls, max_value: Any, **kwargs) -> Self:
         """Ensure values of a series are strictly below a maximum value.
 
         :param max_value: All elements of a series must be strictly smaller
@@ -309,7 +302,7 @@ class Check(BaseCheck):
         )
 
     @classmethod
-    def less_than_or_equal_to(cls, max_value: Any, **kwargs) -> "Check":
+    def less_than_or_equal_to(cls, max_value: Any, **kwargs) -> Self:
         """Ensure values of a series are strictly below a maximum value.
 
         :param max_value: Upper bound not to be exceeded. Must be a type
@@ -333,7 +326,7 @@ class Check(BaseCheck):
         include_min: bool = True,
         include_max: bool = True,
         **kwargs,
-    ) -> "Check":
+    ) -> Self:
         """Ensure all values of a series are within an interval.
 
         Both endpoints must be a type comparable to the dtype of the
@@ -371,7 +364,7 @@ class Check(BaseCheck):
         )
 
     @classmethod
-    def isin(cls, allowed_values: Iterable, **kwargs) -> "Check":
+    def isin(cls, allowed_values: Iterable, **kwargs) -> Self:
         """Ensure only allowed values occur within a series.
 
         This checks whether all elements of a data object
@@ -399,7 +392,7 @@ class Check(BaseCheck):
         )
 
     @classmethod
-    def notin(cls, forbidden_values: Iterable, **kwargs) -> "Check":
+    def notin(cls, forbidden_values: Iterable, **kwargs) -> Self:
         """Ensure some defined values don't occur within a series.
 
         Like :meth:`Check.isin` this check operates on single characters if
@@ -428,7 +421,7 @@ class Check(BaseCheck):
         )
 
     @classmethod
-    def str_matches(cls, pattern: Union[str, re.Pattern], **kwargs) -> "Check":
+    def str_matches(cls, pattern: str | re.Pattern, **kwargs) -> Self:
         """Ensure that string values match a regular expression.
 
         :param pattern: Regular expression pattern to use for matching
@@ -449,9 +442,7 @@ class Check(BaseCheck):
         )
 
     @classmethod
-    def str_contains(
-        cls, pattern: Union[str, re.Pattern], **kwargs
-    ) -> "Check":
+    def str_contains(cls, pattern: str | re.Pattern, **kwargs) -> Self:
         """Ensure that a pattern can be found within each row.
 
         :param pattern: Regular expression pattern to use for searching
@@ -472,7 +463,7 @@ class Check(BaseCheck):
         )
 
     @classmethod
-    def str_startswith(cls, string: str, **kwargs) -> "Check":
+    def str_startswith(cls, string: str, **kwargs) -> Self:
         """Ensure that all values start with a certain string.
 
         :param string: String all values should start with
@@ -487,7 +478,7 @@ class Check(BaseCheck):
         )
 
     @classmethod
-    def str_endswith(cls, string: str, **kwargs) -> "Check":
+    def str_endswith(cls, string: str, **kwargs) -> Self:
         """Ensure that all values end with a certain string.
 
         :param string: String all values should end with
@@ -506,7 +497,7 @@ class Check(BaseCheck):
         min_value: int = None,
         max_value: int = None,
         **kwargs,
-    ) -> "Check":
+    ) -> Self:
         """Ensure that the length of strings is within a specified range.
 
         :param min_value: Minimum length of strings (default: no minimum)
@@ -526,7 +517,7 @@ class Check(BaseCheck):
         )
 
     @classmethod
-    def unique_values_eq(cls, values: str, **kwargs) -> "Check":
+    def unique_values_eq(cls, values: str, **kwargs) -> Self:
         """Ensure that unique values in the data object contain all values.
 
         .. note::
@@ -553,34 +544,34 @@ class Check(BaseCheck):
     # -------
 
     @classmethod
-    def eq(cls, value: Any, **kwargs) -> "Check":
+    def eq(cls, value: Any, **kwargs) -> Self:
         """Alias of :meth:`~pandera.api.checks.Check.equal_to`"""
         return cls.equal_to(value, **kwargs)
 
     @classmethod
-    def ne(cls, value: Any, **kwargs) -> "Check":
+    def ne(cls, value: Any, **kwargs) -> Self:
         """Alias of :meth:`~pandera.api.checks.Check.not_equal_to`"""
         return cls.not_equal_to(value, **kwargs)
 
     @classmethod
-    def gt(cls, min_value: Any, **kwargs) -> "Check":
+    def gt(cls, min_value: Any, **kwargs) -> Self:
         """Alias of :meth:`~pandera.api.checks.Check.greater_than`"""
         return cls.greater_than(min_value, **kwargs)
 
     @classmethod
-    def ge(cls, min_value: Any, **kwargs) -> "Check":
+    def ge(cls, min_value: Any, **kwargs) -> Self:
         """
         Alias of :meth:`~pandera.api.checks.Check.greater_than_or_equal_to`
         """
         return cls.greater_than_or_equal_to(min_value, **kwargs)
 
     @classmethod
-    def lt(cls, max_value: Any, **kwargs) -> "Check":
+    def lt(cls, max_value: Any, **kwargs) -> Self:
         """Alias of :meth:`~pandera.api.checks.Check.less_than`"""
         return cls.less_than(max_value, **kwargs)
 
     @classmethod
-    def le(cls, max_value: Any, **kwargs) -> "Check":
+    def le(cls, max_value: Any, **kwargs) -> Self:
         """Alias of :meth:`~pandera.api.checks.Check.less_than_or_equal_to`"""
         return cls.less_than_or_equal_to(max_value, **kwargs)
 
@@ -592,7 +583,7 @@ class Check(BaseCheck):
         include_min: bool = True,
         include_max: bool = True,
         **kwargs,
-    ) -> "Check":
+    ) -> Self:
         """Alias of :meth:`~pandera.api.checks.Check.in_range`"""
         return cls.in_range(
             min_value,

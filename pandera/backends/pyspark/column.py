@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import traceback
-from typing import Iterable, NamedTuple, Optional, cast
+from typing import Iterable, NamedTuple, cast
 
 from multimethod import DispatchError
 from pyspark.sql import DataFrame
@@ -22,8 +22,8 @@ class CoreCheckResult(NamedTuple):
     check: str
     reason_code: SchemaErrorReason
     passed: bool
-    message: Optional[str] = None
-    failure_cases: Optional[Iterable] = None
+    message: str | None = None
+    failure_cases: Iterable | None = None
 
 
 class ColumnSchemaBackend(PysparkSchemaBackend):
@@ -61,10 +61,10 @@ class ColumnSchemaBackend(PysparkSchemaBackend):
         check_obj,
         schema,
         *,
-        head: Optional[int] = None,  # pylint: disable=unused-argument
-        tail: Optional[int] = None,  # pylint: disable=unused-argument
-        sample: Optional[int] = None,  # pylint: disable=unused-argument
-        random_state: Optional[int] = None,  # pylint: disable=unused-argument
+        head: int | None = None,  # pylint: disable=unused-argument
+        tail: int | None = None,  # pylint: disable=unused-argument
+        sample: int | None = None,  # pylint: disable=unused-argument
+        random_state: int | None = None,  # pylint: disable=unused-argument
         lazy: bool = False,
         inplace: bool = False,
         error_handler: ErrorHandler = None,

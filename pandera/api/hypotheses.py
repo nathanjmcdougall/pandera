@@ -1,7 +1,9 @@
 """Data validation checks for hypothesis testing."""
 from __future__ import annotations
 
-from typing import Any, Callable, Dict, List, Optional, TypeVar, Union
+from typing import Any, Callable, TypeVar
+
+from typing_extensions import Self
 
 from pandera import errors
 from pandera.api.checks import Check
@@ -22,20 +24,20 @@ class Hypothesis(Check):
     def __init__(
         self,
         test: Callable,
-        samples: Optional[Union[str, List[str]]] = None,
-        groupby: Optional[Union[str, List[str], Callable]] = None,
-        relationship: Union[str, Callable] = "equal",
-        alpha: Optional[float] = None,
-        test_kwargs: Dict = None,
-        relationship_kwargs: Dict = None,
-        name: Optional[str] = None,
-        error: Optional[str] = None,
+        samples: str | list[str] | None = None,
+        groupby: str | list[str] | Callable | None = None,
+        relationship: str | Callable = "equal",
+        alpha: float | None = None,
+        test_kwargs: dict = None,
+        relationship_kwargs: dict = None,
+        name: str | None = None,
+        error: str | None = None,
         raise_warning: bool = False,
-        n_failure_cases: Optional[int] = None,
-        title: Optional[str] = None,
-        description: Optional[str] = None,
-        statistics: Dict[str, Any] = None,
-        strategy: Optional[SearchStrategy] = None,
+        n_failure_cases: int | None = None,
+        title: str | None = None,
+        description: str | None = None,
+        statistics: dict[str, Any] = None,
+        strategy: SearchStrategy | None = None,
         **check_kwargs,
     ) -> None:
         """Perform a hypothesis test on a Series or DataFrame.
@@ -185,13 +187,13 @@ class Hypothesis(Check):
         cls,
         sample1: str,
         sample2: str,
-        groupby: Optional[Union[str, List[str], Callable]] = None,
+        groupby: str | list[str] | Callable | None = None,
         relationship: str = "equal",
         alpha: float = DEFAULT_ALPHA,
         equal_var: bool = True,
         nan_policy: str = "propagate",
         **kwargs,
-    ) -> "Hypothesis":
+    ) -> Self:
         """Calculate a t-test for the means of two samples.
 
         Perform a two-sided test for the null hypothesis that 2 independent
@@ -295,13 +297,13 @@ class Hypothesis(Check):
     def one_sample_ttest(
         cls,
         popmean: float,
-        sample: Optional[str] = None,
-        groupby: Optional[Union[str, List[str], Callable]] = None,
+        sample: str | None = None,
+        groupby: str | list[str] | Callable | None = None,
         relationship: str = "equal",
         alpha: float = DEFAULT_ALPHA,
         nan_policy="propagate",
         **kwargs,
-    ) -> "Hypothesis":
+    ) -> Self:
         """Calculate a t-test for the mean of one sample.
 
         :param sample: The sample group to test. For `Column` and

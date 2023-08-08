@@ -6,20 +6,22 @@ import copy
 import os
 import warnings
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union, cast, overload
+from typing import Any, cast, overload
 
 from pyspark.sql import DataFrame
+from typing_extensions import Self
 
 from pandera import errors
-from pandera.config import CONFIG
 from pandera.api.base.schema import BaseSchema
 from pandera.api.checks import Check
+from pandera.api.pyspark.components import Column
 from pandera.api.pyspark.error_handler import ErrorHandler
 from pandera.api.pyspark.types import (
     CheckList,
     PySparkDtypeInputTypes,
     StrictType,
 )
+from pandera.config import CONFIG
 from pandera.dtypes import DataType, UniqueSettings
 from pandera.engines import pyspark_engine
 
@@ -31,21 +33,19 @@ class DataFrameSchema(BaseSchema):  # pylint: disable=too-many-public-methods
 
     def __init__(
         self,
-        columns: Optional[  # type: ignore [name-defined]
-            Dict[Any, "pandera.api.pyspark.components.Column"]  # type: ignore [name-defined]
-        ] = None,
-        checks: Optional[CheckList] = None,
+        columns: dict[Any, Column] | None = None,
+        checks: CheckList | None = None,
         dtype: PySparkDtypeInputTypes = None,
         coerce: bool = False,
         strict: StrictType = False,
-        name: Optional[str] = None,
+        name: str | None = None,
         ordered: bool = False,
-        unique: Optional[Union[str, List[str]]] = None,
+        unique: str | list[str] | None = None,
         report_duplicates: UniqueSettings = "all",
         unique_column_names: bool = False,
-        title: Optional[str] = None,
-        description: Optional[str] = None,
-        metadata: Optional[dict] = None,
+        title: str | None = None,
+        description: str | None = None,
+        metadata: dict | None = None,
     ) -> None:
         """Initialize DataFrameSchema validator.
 
@@ -130,7 +130,7 @@ class DataFrameSchema(BaseSchema):  # pylint: disable=too-many-public-methods
             metadata=metadata,
         )
 
-        self.columns: Dict[Any, "pandera.api.pyspark.components.Column"] = (  # type: ignore [name-defined]
+        self.columns: dict[Any, Column] = (  # type: ignore [name-defined]
             {} if columns is None else columns
         )
 
@@ -144,7 +144,7 @@ class DataFrameSchema(BaseSchema):  # pylint: disable=too-many-public-methods
                 "or `'filter'`."
             )
 
-        self.strict: Union[bool, str] = strict
+        self.strict: bool | str = strict
         self._coerce = coerce
         self.ordered = ordered
         self._unique = unique
@@ -174,7 +174,7 @@ class DataFrameSchema(BaseSchema):  # pylint: disable=too-many-public-methods
         return self._unique
 
     @unique.setter
-    def unique(self, value: Optional[Union[str, List[str]]]) -> None:
+    def unique(self, value: str | list[str] | None) -> None:
         """Set unique attribute."""
         self._unique = [value] if isinstance(value, str) else value
 
@@ -188,7 +188,7 @@ class DataFrameSchema(BaseSchema):  # pylint: disable=too-many-public-methods
         self._IS_INFERRED = value
 
     @property
-    def dtypes(self) -> Dict[str, DataType]:
+    def dtypes(self) -> dict[str, DataType]:
         # pylint:disable=anomalous-backslash-in-string
         """
         A dict where the keys are column names and values are
@@ -209,9 +209,9 @@ class DataFrameSchema(BaseSchema):  # pylint: disable=too-many-public-methods
             )
         return {n: c.dtype for n, c in self.columns.items() if not c.regex}
 
-    def get_metadata(self) -> Optional[dict]:
+    def get_metadata(self) -> dict | None:
         """Provide metadata for columns and schema level"""
-        res: Dict[Any, Any] = {"columns": {}}
+        res: dict[Any, Any] = {"columns": {}}
         for k in self.columns.keys():
             res["columns"][k] = self.columns[k].properties["metadata"]
 
@@ -221,7 +221,7 @@ class DataFrameSchema(BaseSchema):  # pylint: disable=too-many-public-methods
         meta[self.name] = res
         return meta
 
-    def get_dtypes(self, dataframe: DataFrame) -> Dict[str, DataType]:
+    def get_dtypes(self, dataframe: DataFrame) -> dict[str, DataType]:
         """
         Same as the ``dtype`` property, but expands columns where
         ``regex == True`` based on the supplied dataframe.
@@ -265,10 +265,10 @@ class DataFrameSchema(BaseSchema):  # pylint: disable=too-many-public-methods
     def validate(
         self,
         check_obj: DataFrame,
-        head: Optional[int] = None,
-        tail: Optional[int] = None,
-        sample: Optional[int] = None,
-        random_state: Optional[int] = None,
+        head: int | None = None,
+        tail: int | None = None,
+        sample: int | None = None,
+        random_state: int | None = None,
         lazy: bool = True,
         inplace: bool = False,
     ):
@@ -342,10 +342,10 @@ class DataFrameSchema(BaseSchema):  # pylint: disable=too-many-public-methods
     def _validate(
         self,
         check_obj: DataFrame,
-        head: Optional[int] = None,
-        tail: Optional[int] = None,
-        sample: Optional[int] = None,
-        random_state: Optional[int] = None,
+        head: int | None = None,
+        tail: int | None = None,
+        sample: int | None = None,
+        random_state: int | None = None,
         lazy: bool = False,
         inplace: bool = False,
         error_handler: ErrorHandler = None,
@@ -374,10 +374,10 @@ class DataFrameSchema(BaseSchema):  # pylint: disable=too-many-public-methods
     def __call__(
         self,
         dataframe: DataFrame,
-        head: Optional[int] = None,
-        tail: Optional[int] = None,
-        sample: Optional[int] = None,
-        random_state: Optional[int] = None,
+        head: int | None = None,
+        tail: int | None = None,
+        sample: int | None = None,
+        random_state: int | None = None,
         lazy: bool = True,
         inplace: bool = False,
     ):
@@ -476,18 +476,18 @@ class DataFrameSchema(BaseSchema):  # pylint: disable=too-many-public-methods
         yield cls._pydantic_validate
 
     @classmethod
-    def _pydantic_validate(cls, schema: Any) -> "DataFrameSchema":
+    def _pydantic_validate(cls, schema: Any) -> Self:
         """Verify that the input is a compatible DataFrameSchema."""
         if not isinstance(schema, cls):  # type: ignore
             raise TypeError(f"{schema} is not a {cls}.")
 
-        return cast("DataFrameSchema", schema)
+        return cast(cls, schema)
 
     #####################
     # Schema IO Methods #
     #####################
 
-    def to_script(self, fp: Union[str, Path] = None) -> "DataFrameSchema":
+    def to_script(self, fp: str | Path = None) -> Self:
         """Create DataFrameSchema from yaml file.
 
         :param path: str, Path to write script
@@ -499,7 +499,7 @@ class DataFrameSchema(BaseSchema):  # pylint: disable=too-many-public-methods
         return pandera.io.to_script(self, fp)
 
     @classmethod
-    def from_yaml(cls, yaml_schema) -> "DataFrameSchema":
+    def from_yaml(cls, yaml_schema) -> Self:
         """Create DataFrameSchema from yaml file.
 
         :param yaml_schema: str, Path to yaml schema, or serialized yaml
@@ -519,7 +519,7 @@ class DataFrameSchema(BaseSchema):  # pylint: disable=too-many-public-methods
     def to_yaml(self, stream: os.PathLike) -> None:  # pragma: no cover
         ...
 
-    def to_yaml(self, stream: Optional[os.PathLike] = None) -> Optional[str]:
+    def to_yaml(self, stream: os.PathLike | None = None) -> str | None:
         """Write DataFrameSchema to yaml file.
 
         :param stream: file stream to write to. If None, dumps to string.
@@ -531,7 +531,7 @@ class DataFrameSchema(BaseSchema):  # pylint: disable=too-many-public-methods
         return pandera.io.to_yaml(self, stream=stream)
 
     @classmethod
-    def from_json(cls, source) -> "DataFrameSchema":
+    def from_json(cls, source) -> Self:
         """Create DataFrameSchema from json file.
 
         :param source: str, Path to json schema, or serialized yaml
@@ -556,8 +556,8 @@ class DataFrameSchema(BaseSchema):  # pylint: disable=too-many-public-methods
         ...
 
     def to_json(
-        self, target: Optional[os.PathLike] = None, **kwargs
-    ) -> Optional[str]:
+        self, target: os.PathLike | None = None, **kwargs
+    ) -> str | None:
         """Write DataFrameSchema to json file.
 
         :param target: file target to write to. If None, dumps to string.
@@ -570,7 +570,7 @@ class DataFrameSchema(BaseSchema):  # pylint: disable=too-many-public-methods
 
 
 def _validate_columns(
-    column_dict: dict[Any, "pandera.api.pyspark.components.Column"],  # type: ignore [name-defined]
+    column_dict: dict[Any, Column],
 ) -> None:
     for column_name, column in column_dict.items():
         for check in column.checks:
@@ -588,8 +588,8 @@ def _validate_columns(
 
 
 def _columns_renamed(
-    columns: dict[Any, "pandera.api.pyspark.components.Column"],  # type: ignore [name-defined]
-) -> dict[Any, "pandera.api.pyspark.components.Column"]:  # type: ignore [name-defined]
+    columns: dict[Any, Column],
+) -> dict[Any, Column]:
     def renamed(column, new_name):
         column = copy.deepcopy(column)
         column.set_name(new_name)

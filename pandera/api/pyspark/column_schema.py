@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import copy
-from typing import Any, List, Optional, TypeVar, cast
+from typing import Any, TypeVar, cast
 
 import pyspark.sql as ps
 
@@ -21,14 +21,14 @@ class ColumnSchema(BaseSchema):
 
     def __init__(
         self,
-        dtype: Optional[PySparkDtypeInputTypes] = None,
-        checks: Optional[CheckList] = None,
+        dtype: PySparkDtypeInputTypes | None = None,
+        checks: CheckList | None = None,
         nullable: bool = False,
         coerce: bool = False,
         name: Any = None,
-        title: Optional[str] = None,
-        description: Optional[str] = None,
-        metadata: Optional[dict] = None,
+        title: str | None = None,
+        description: str | None = None,
+        metadata: dict | None = None,
     ) -> None:
         """Initialize column schema.
 
@@ -76,7 +76,7 @@ class ColumnSchema(BaseSchema):
         return self._dtype  # type: ignore
 
     @dtype.setter
-    def dtype(self, value: Optional[PySparkDtypeInputTypes]) -> None:
+    def dtype(self, value: PySparkDtypeInputTypes | None) -> None:
         """Set the pyspark dtype"""
         self._dtype = (
             pyspark_engine.Engine.dtype(value) if value else None
@@ -85,10 +85,10 @@ class ColumnSchema(BaseSchema):
     def validate(
         self,
         check_obj,
-        head: Optional[int] = None,
-        tail: Optional[int] = None,
-        sample: Optional[int] = None,
-        random_state: Optional[int] = None,
+        head: int | None = None,
+        tail: int | None = None,
+        sample: int | None = None,
+        random_state: int | None = None,
         lazy: bool = False,
         inplace: bool = False,
         error_handler: ErrorHandler = None,
@@ -128,10 +128,10 @@ class ColumnSchema(BaseSchema):
     def __call__(
         self,
         check_obj: ps.DataFrame,
-        head: Optional[int] = None,
-        tail: Optional[int] = None,
-        sample: Optional[int] = None,
-        random_state: Optional[int] = None,
+        head: int | None = None,
+        tail: int | None = None,
+        sample: int | None = None,
+        random_state: int | None = None,
         lazy: bool = False,
         inplace: bool = False,
     ):
@@ -162,7 +162,7 @@ class ColumnSchema(BaseSchema):
     #############################
 
     @inferred_schema_guard
-    def update_checks(self, checks: List[Check]):
+    def update_checks(self, checks: list[Check]):
         """Create a new Schema with a new set of Checks
 
         :param checks: checks to set on the new schema

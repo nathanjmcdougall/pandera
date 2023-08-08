@@ -9,20 +9,20 @@ from __future__ import annotations
 import inspect
 from abc import ABC
 from functools import wraps
-from typing import Any, Dict, Optional, Tuple, Type, Union
+from typing import Any, Union
 
 from pandera.backends.base import BaseSchemaBackend
 from pandera.dtypes import DataType
 from pandera.errors import BackendNotFoundError
 
-DtypeInputTypes = Union[str, type, DataType, Type]
+DtypeInputTypes = Union[str, type, DataType, type]
 
 
 class BaseSchema(ABC):
     """Core schema specification."""
 
-    BACKEND_REGISTRY: Dict[
-        Tuple[Type, Type], Type[BaseSchemaBackend]
+    BACKEND_REGISTRY: dict[
+        tuple[type, type], type[BaseSchemaBackend]
     ] = {}  # noqa
 
     def __init__(
@@ -69,15 +69,15 @@ class BaseSchema(ABC):
         raise NotImplementedError
 
     @classmethod
-    def register_backend(cls, type_: Type, backend: Type[BaseSchemaBackend]):
+    def register_backend(cls, type_: type, backend: type[BaseSchemaBackend]):
         """Register a schema backend for this class."""
         cls.BACKEND_REGISTRY[(cls, type_)] = backend
 
     @classmethod
     def get_backend(
         cls,
-        check_obj: Optional[Any] = None,
-        check_type: Optional[Type] = None,
+        check_obj: Any | None = None,
+        check_type: type | None = None,
     ) -> BaseSchemaBackend:
         """Get the backend associated with the type of ``check_obj`` ."""
         if check_obj is not None:

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 # pylint:disable=abstract-method
 import copy
+import importlib.util
 import inspect
 import os
 import re
@@ -10,20 +11,17 @@ import typing
 from typing import (
     Any,
     Callable,
-    Dict,
     Iterable,
     List,
     Mapping,
     Optional,
-    Set,
-    Tuple,
     Type,
     TypeVar,
-    Union,
     cast,
 )
 
 import pyspark.sql as ps
+from typing_extensions import Self
 
 from pandera.api.base.model import BaseModel
 from pandera.api.checks import Check
@@ -47,19 +45,13 @@ try:
 except ImportError:  # pragma: no cover
     from typing import get_type_hints  # type: ignore
 
-try:
-    from pydantic.fields import ModelField  # pylint:disable=unused-import
-
-    HAS_PYDANTIC = True
-except ImportError:  # pragma: no cover
-    HAS_PYDANTIC = False
-
+HAS_PYDANTIC = importlib.util.find_spec("pydantic") is not None
 
 _CONFIG_KEY = "Config"
-MODEL_CACHE: Dict[Type["DataFrameModel"], DataFrameSchema] = {}
-GENERIC_SCHEMA_CACHE: Dict[
-    Tuple[Type["DataFrameModel"], Tuple[Type[Any], ...]],
-    Type["DataFrameModel"],
+MODEL_CACHE: dict[type[DataFrameModel], DataFrameSchema] = {}
+GENERIC_SCHEMA_CACHE: dict[
+    tuple[type[DataFrameModel], tuple[type[Any], ...]],
+    type[DataFrameModel],
 ] = {}
 
 F = TypeVar("F", bound=Callable)
@@ -91,7 +83,7 @@ _config_options = [attr for attr in vars(BaseConfig) if _is_field(attr)]
 
 def _extract_config_options_and_extras(
     config: Any,
-) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+) -> tuple[dict[str, Any], dict[str, Any]]:
     config_options, extras = {}, {}
     for name, value in vars(config).items():
         if name in _config_options:
@@ -103,7 +95,7 @@ def _extract_config_options_and_extras(
     return config_options, extras
 
 
-def _convert_extras_to_checks(extras: Dict[str, Any]) -> List[Check]:
+def _convert_extras_to_checks(extras: dict[str, Any]) -> list[Check]:
     """
     New in GH#383.
     Any key not in BaseConfig keys is interpreted as defining a dataframe check. This function
@@ -138,15 +130,15 @@ class DataFrameModel(BaseModel):
     See the :ref:`User Guide <dataframe_models>` for more.
     """
 
-    Config: Type[BaseConfig] = BaseConfig
-    __extras__: Optional[Dict[str, Any]] = None
-    __schema__: Optional[DataFrameSchema] = None
-    __config__: Optional[Type[BaseConfig]] = None
+    Config: type[BaseConfig] = BaseConfig
+    __extras__: dict[str, Any] | None = None
+    __schema__: DataFrameSchema | None = None
+    __config__: type[BaseConfig] | None = None
 
     #: Key according to `FieldInfo.name`
-    __fields__: Mapping[str, Tuple[AnnotationInfo, FieldInfo]] = {}
-    __checks__: Dict[str, List[Check]] = {}
-    __root_checks__: List[Check] = []
+    __fields__: Mapping[str, tuple[AnnotationInfo, FieldInfo]] = {}
+    __checks__: dict[str, list[Check]] = {}
+    __root_checks__: list[Check] = []
 
     @docstring_substitution(validate_doc=DataFrameSchema.validate.__doc__)
     def __new__(cls, *args, **kwargs) -> DataFrameBase[TDataFrameModel]:  # type: ignore [misc]
@@ -178,16 +170,16 @@ class DataFrameModel(BaseModel):
         cls.__config__, cls.__extras__ = cls._collect_config_and_extras()
 
     def __class_getitem__(
-        cls: Type[TDataFrameModel],
-        params: Union[Type[Any], Tuple[Type[Any], ...]],
-    ) -> Type[TDataFrameModel]:
+        cls: type[TDataFrameModel],
+        params: type[Any] | tuple[type[Any], ...],
+    ) -> type[TDataFrameModel]:
         """Parameterize the class's generic arguments with the specified types"""
         if not hasattr(cls, "__parameters__"):
             raise TypeError(
                 f"{cls.__name__} must inherit from typing.Generic before being parameterized"
             )
         # pylint: disable=no-member
-        __parameters__: Tuple[TypeVar, ...] = cls.__parameters__  # type: ignore
+        __parameters__: tuple[TypeVar, ...] = cls.__parameters__  # type: ignore
 
         if not isinstance(params, tuple):
             params = (params,)
@@ -200,10 +192,10 @@ class DataFrameModel(BaseModel):
                 Type[TDataFrameModel], GENERIC_SCHEMA_CACHE[(cls, params)]
             )
 
-        param_dict: Dict[TypeVar, Type[Any]] = dict(
+        param_dict: dict[TypeVar, type[Any]] = dict(
             zip(__parameters__, params)
         )
-        extra: Dict[str, Any] = {"__annotations__": {}}
+        extra: dict[str, Any] = {"__annotations__": {}}
         for field, (annot_info, field_info) in cls._collect_fields().items():
             if isinstance(annot_info.arg, TypeVar):
                 if annot_info.arg in param_dict:
@@ -274,7 +266,7 @@ class DataFrameModel(BaseModel):
         return cls.__schema__  # type: ignore
 
     @classmethod
-    def to_yaml(cls, stream: Optional[os.PathLike] = None):
+    def to_yaml(cls, stream: os.PathLike | None = None):
         """
         Convert `Schema` to yaml using `io.to_yaml`.
         """
@@ -283,15 +275,15 @@ class DataFrameModel(BaseModel):
     @classmethod
     @docstring_substitution(validate_doc=DataFrameSchema.validate.__doc__)
     def validate(
-        cls: Type[TDataFrameModel],
+        cls: type[TDataFrameModel],
         check_obj: ps.DataFrame,
-        head: Optional[int] = None,
-        tail: Optional[int] = None,
-        sample: Optional[int] = None,
-        random_state: Optional[int] = None,
+        head: int | None = None,
+        tail: int | None = None,
+        sample: int | None = None,
+        random_state: int | None = None,
         lazy: bool = True,
         inplace: bool = False,
-    ) -> Optional[DataFrameBase[TDataFrameModel]]:
+    ) -> DataFrameBase[TDataFrameModel] | None:
         """%(validate_doc)s"""
         return cast(
             DataFrameBase[TDataFrameModel],
@@ -303,10 +295,10 @@ class DataFrameModel(BaseModel):
     @classmethod
     def _build_columns_index(  # pylint:disable=too-many-locals
         cls,
-        fields: Dict[str, Tuple[AnnotationInfo, FieldInfo]],
-        checks: Dict[str, List[Check]],
-    ) -> Dict[str, Column]:
-        columns: Dict[str, Column] = {}
+        fields: dict[str, tuple[AnnotationInfo, FieldInfo]],
+        checks: dict[str, list[Check]],
+    ) -> dict[str, Column]:
+        columns: dict[str, Column] = {}
         for field_name, (annotation, field) in fields.items():
             field_checks = checks.get(field_name, [])
             field_name = field.name
@@ -351,7 +343,7 @@ class DataFrameModel(BaseModel):
         return columns
 
     @classmethod
-    def _get_model_attrs(cls) -> Dict[str, Any]:
+    def _get_model_attrs(cls) -> dict[str, Any]:
         """Return all attributes.
         Similar to inspect.get_members but bypass descriptors __get__.
         """
@@ -363,7 +355,7 @@ class DataFrameModel(BaseModel):
         return attrs
 
     @classmethod
-    def _collect_fields(cls) -> Dict[str, Tuple[AnnotationInfo, FieldInfo]]:
+    def _collect_fields(cls) -> dict[str, tuple[AnnotationInfo, FieldInfo]]:
         """Centralize publicly named fields and their corresponding annotations."""
 
         annotations = get_type_hints(  # pylint:disable=unexpected-keyword-arg
@@ -398,7 +390,7 @@ class DataFrameModel(BaseModel):
     @classmethod
     def _collect_config_and_extras(
         cls,
-    ) -> Tuple[Type[BaseConfig], Dict[str, Any]]:
+    ) -> tuple[type[BaseConfig], dict[str, Any]]:
         """Collect config options from bases, splitting off unknown options."""
         bases = inspect.getmro(cls)[:-1]
         bases = tuple(
@@ -419,7 +411,7 @@ class DataFrameModel(BaseModel):
         return type("Config", (BaseConfig,), options), extras
 
     @classmethod
-    def _collect_check_infos(cls, key: str) -> List[CheckInfo]:
+    def _collect_check_infos(cls, key: str) -> list[CheckInfo]:
         """Collect inherited check metadata from bases.
         Inherited classmethods are not in cls.__dict__, that's why we need to
         walk the inheritance tree.
@@ -444,10 +436,10 @@ class DataFrameModel(BaseModel):
 
     @classmethod
     def _extract_checks(
-        cls, check_infos: List[FieldCheckInfo], field_names: List[str]
-    ) -> Dict[str, List[Check]]:
+        cls, check_infos: list[FieldCheckInfo], field_names: list[str]
+    ) -> dict[str, list[Check]]:
         """Collect field annotations from bases in mro reverse order."""
-        checks: Dict[str, List[Check]] = {}
+        checks: dict[str, list[Check]] = {}
         for check_info in check_infos:
             check_info_fields = {
                 field.name if isinstance(field, FieldInfo) else field
@@ -471,7 +463,7 @@ class DataFrameModel(BaseModel):
         return checks
 
     @classmethod
-    def _extract_df_checks(cls, check_infos: List[CheckInfo]) -> List[Check]:
+    def _extract_df_checks(cls, check_infos: list[CheckInfo]) -> list[Check]:
         """Collect field annotations from bases in mro reverse order."""
         return [check_info.to_check(cls) for check_info in check_infos]
 
@@ -480,7 +472,7 @@ class DataFrameModel(BaseModel):
         yield cls.pydantic_validate
 
     @classmethod
-    def pydantic_validate(cls, schema_model: Any) -> "DataFrameModel":
+    def pydantic_validate(cls, schema_model: Any) -> Self:
         """Verify that the input is a compatible dataframe model."""
         if not inspect.isclass(schema_model):  # type: ignore
             raise TypeError(f"{schema_model} is not a pandera.DataFrameModel")
@@ -501,9 +493,9 @@ class DataFrameModel(BaseModel):
         return cast("DataFrameModel", schema_model)
 
     @classmethod
-    def get_metadata(cls) -> Optional[dict]:
+    def get_metadata(cls) -> dict | None:
         """Provide metadata for columns and schema level"""
-        res: Dict[Any, Any] = {"columns": {}}
+        res: dict[Any, Any] = {"columns": {}}
         columns = cls._collect_fields()
 
         for k, (_, v) in columns.items():
@@ -528,16 +520,16 @@ Alias for DataFrameModel.
 """
 
 
-def _regex_filter(seq: Iterable, regexps: Iterable[str]) -> Set[str]:
+def _regex_filter(seq: Iterable, regexps: Iterable[str]) -> set[str]:
     """Filter items matching at least one of the regexes."""
-    matched: Set[str] = set()
+    matched: set[str] = set()
     for regex in regexps:
         pattern = re.compile(regex)
         matched.update(filter(pattern.match, seq))
     return matched
 
 
-def _get_dtype_kwargs(annotation: AnnotationInfo) -> Dict[str, Any]:
+def _get_dtype_kwargs(annotation: AnnotationInfo) -> dict[str, Any]:
     sig = inspect.signature(annotation.arg)  # type: ignore
     dtype_arg_names = list(sig.parameters.keys())
     if len(annotation.metadata) != len(dtype_arg_names):  # type: ignore

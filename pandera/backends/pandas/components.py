@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import traceback
 from copy import copy, deepcopy
-from typing import Iterable, List, Optional, Union
+from typing import Iterable
 
 import numpy as np
 import pandas as pd
@@ -37,10 +37,10 @@ class ColumnBackend(ArraySchemaBackend):
         check_obj: pd.DataFrame,
         schema,
         *,
-        head: Optional[int] = None,
-        tail: Optional[int] = None,
-        sample: Optional[int] = None,
-        random_state: Optional[int] = None,
+        head: int | None = None,
+        tail: int | None = None,
+        sample: int | None = None,
+        random_state: int | None = None,
         lazy: bool = False,
         inplace: bool = False,
     ) -> pd.DataFrame:
@@ -130,7 +130,7 @@ class ColumnBackend(ArraySchemaBackend):
         return check_obj
 
     def get_regex_columns(
-        self, schema, columns: Union[pd.Index, pd.MultiIndex]
+        self, schema, columns: pd.Index | pd.MultiIndex
     ) -> Iterable:
         """Get matching column names based on regex column name pattern.
 
@@ -185,15 +185,15 @@ class ColumnBackend(ArraySchemaBackend):
 
     def coerce_dtype(
         self,
-        check_obj: Union[pd.DataFrame, pd.Series],
+        check_obj: pd.DataFrame | pd.Series,
         schema=None,
-    ) -> Union[pd.DataFrame, pd.Series]:
+    ) -> pd.DataFrame | pd.Series:
         """Coerce dtype of a column, handling duplicate column names."""
         # pylint: disable=super-with-arguments
         # pylint: disable=fixme
         # TODO: use singledispatchmethod here
         if is_field(check_obj) or is_index(check_obj):
-            return super(ColumnBackend, self).coerce_dtype(
+            return super().coerce_dtype(
                 check_obj,
                 schema=schema,
             )
@@ -206,7 +206,7 @@ class ColumnBackend(ArraySchemaBackend):
         )
 
     def run_checks(self, check_obj, schema):
-        check_results: List[CoreCheckResult] = []
+        check_results: list[CoreCheckResult] = []
         for check_index, check in enumerate(schema.checks):
             check_args = [None] if is_field(check_obj) else [schema.name]
             try:
@@ -254,16 +254,16 @@ class IndexBackend(ArraySchemaBackend):
 
     def validate(
         self,
-        check_obj: Union[pd.DataFrame, pd.Series],
+        check_obj: pd.DataFrame | pd.Series,
         schema,
         *,
-        head: Optional[int] = None,
-        tail: Optional[int] = None,
-        sample: Optional[int] = None,
-        random_state: Optional[int] = None,
+        head: int | None = None,
+        tail: int | None = None,
+        sample: int | None = None,
+        random_state: int | None = None,
         lazy: bool = False,
         inplace: bool = False,
-    ) -> Union[pd.DataFrame, pd.Series]:
+    ) -> pd.DataFrame | pd.Series:
         if is_multiindex(check_obj.index):
             raise SchemaError(
                 schema, check_obj, "Attempting to validate mismatch index"
@@ -377,16 +377,16 @@ class MultiIndexBackend(DataFrameSchemaBackend):
 
     def validate(
         self,
-        check_obj: Union[pd.DataFrame, pd.Series],
+        check_obj: pd.DataFrame | pd.Series,
         schema,
         *,
-        head: Optional[int] = None,
-        tail: Optional[int] = None,
-        sample: Optional[int] = None,
-        random_state: Optional[int] = None,
+        head: int | None = None,
+        tail: int | None = None,
+        sample: int | None = None,
+        random_state: int | None = None,
         lazy: bool = False,
         inplace: bool = False,
-    ) -> Union[pd.DataFrame, pd.Series]:
+    ) -> pd.DataFrame | pd.Series:
         """Validate DataFrame or Series MultiIndex.
 
         :param check_obj: pandas DataFrame of Series to validate.

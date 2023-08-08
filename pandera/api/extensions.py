@@ -6,7 +6,7 @@ import warnings
 from enum import Enum
 from functools import partial, wraps
 from inspect import signature
-from typing import Callable, List, Optional, Tuple, Type, Union
+from typing import Callable, Tuple, Union
 
 import pandas as pd
 import typing_inspect
@@ -34,8 +34,8 @@ class BuiltinCheckRegistrationError(Exception):
 # pylint: disable=too-many-locals
 def register_builtin_check(
     fn=None,
-    strategy: Optional[Callable] = None,
-    _check_cls: Type = Check,
+    strategy: Callable | None = None,
+    _check_cls: type = Check,
     **outer_kwargs,
 ):
     """Register a check method to the Check namespace.
@@ -143,9 +143,9 @@ def register_check_statistics(statistics_args):
 def register_check_method(  # pylint:disable=too-many-branches
     check_fn=None,
     *,
-    statistics: Optional[List[str]] = None,
-    supported_types: Optional[Union[type, Tuple, List]] = None,
-    check_type: Union[CheckType, str] = "vectorized",
+    statistics: list[str] | None = None,
+    supported_types: type | tuple | list | None = None,
+    check_type: CheckType | str = "vectorized",
     strategy=None,
 ):
     """Registers a function as a :class:`~pandera.api.checks.Check` method.

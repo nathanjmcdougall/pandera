@@ -1,5 +1,6 @@
 """A flexible and expressive pyspark validation library."""
 # pylint: disable=unused-import
+import pandera.backends.pyspark
 from pandera.accessors import pyspark_sql_accessor
 from pandera.api.checks import Check
 from pandera.api.pyspark import Column, DataFrameSchema
@@ -9,7 +10,6 @@ from pandera.api.pyspark.model_components import (
     check,
     dataframe_check,
 )
-import pandera.backends.pyspark
 from pandera.decorators import (
     check_input,
     check_io,
@@ -50,7 +50,6 @@ from pandera.errors import PysparkSchemaError, SchemaInitError
 from pandera.schema_inference.pandas import infer_schema
 from pandera.typing import pyspark_sql
 from pandera.version import __version__
-
 
 __all__ = [
     # dtypes

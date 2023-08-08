@@ -7,13 +7,8 @@ import io
 from typing import (  # type: ignore[attr-defined]
     TYPE_CHECKING,
     Any,
-    Dict,
     Generic,
-    List,
-    Tuple,
-    Type,
     TypeVar,
-    Union,
     _type_check,
 )
 
@@ -176,7 +171,7 @@ class DataFrame(DataFrameBase, pd.DataFrame, Generic[T]):
         if buffer is None:
             return out
         elif buffer.closed:
-            raise IOError(
+            raise OSError(
                 f"pandas=={pd.__version__} closed the buffer automatically "
                 f"using the serialization method {writer}. Use a later "
                 "version of pandas or use a different the serialization "
@@ -222,12 +217,13 @@ class DataFrame(DataFrameBase, pd.DataFrame, Generic[T]):
 
     @staticmethod
     def from_records(  # type: ignore
-        schema: Type[T],
-        data: Union[  # type: ignore
-            np.ndarray, List[Tuple[Any, ...]], Dict[Any, Any], pd.DataFrame
-        ],
+        schema: type[T],
+        data: np.ndarray
+        | list[tuple[Any, ...]]
+        | dict[Any, Any]
+        | pd.DataFrame,
         **kwargs,
-    ) -> "DataFrame[T]":
+    ) -> DataFrame[T]:
         """
         Convert structured or record ndarray to pandera-validated DataFrame.
 

@@ -1,8 +1,9 @@
 """Hypothesis backend for pandas."""
 from __future__ import annotations
 
+import importlib.util
 from functools import partial
-from typing import Any, Callable, Dict, Union, cast
+from typing import Any, Callable, Dict, cast
 
 import pandas as pd
 from multimethod import overload
@@ -12,13 +13,7 @@ from pandera.api.hypotheses import Hypothesis
 from pandera.api.pandas.types import is_field, is_table
 from pandera.backends.pandas.checks import PandasCheckBackend
 
-try:
-    from scipy import stats  # pylint: disable=unused-import
-except ImportError:  # pragma: no cover
-    HAS_SCIPY = False
-else:
-    HAS_SCIPY = True
-
+HAS_SCIPY = importlib.util.find_spec("scipy.stats") is not None
 
 DEFAULT_ALPHA = 0.01
 
@@ -67,7 +62,7 @@ class PandasHypothesisBackend(PandasCheckBackend):
         )
         self.check_fn = self._hypothesis_check  # type: ignore [assignment]
 
-    def _relationships(self, relationship: Union[str, Callable]):
+    def _relationships(self, relationship: str | Callable):
         """Impose a relationship on a supplied test function.
 
         :param relationship: represents what relationship conditions are
@@ -116,7 +111,7 @@ class PandasHypothesisBackend(PandasCheckBackend):
         self,
         check_obj: is_table,  # type: ignore [valid-type]
         key,
-    ) -> Union[pd.DataFrame, Dict[str, pd.DataFrame]]:
+    ) -> pd.DataFrame | dict[str, pd.DataFrame]:
         if self.check.groupby is None:
             return check_obj[key]
         return cast(

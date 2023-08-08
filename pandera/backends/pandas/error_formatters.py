@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from typing import Dict, List, Tuple, Union
 
 import pandas as pd
 
@@ -62,7 +61,7 @@ def scalar_failure_case(x) -> pd.DataFrame:
 
 
 def reshape_failure_cases(
-    failure_cases: Union[pd.DataFrame, pd.Series], ignore_na: bool = True
+    failure_cases: pd.DataFrame | pd.Series, ignore_na: bool = True
 ) -> pd.DataFrame:
     """Construct readable error messages for vectorized_error_message.
 
@@ -143,7 +142,7 @@ def _multiindex_to_frame(df):
     return df.index.to_frame().drop_duplicates()
 
 
-def consolidate_failure_cases(schema_errors: List[SchemaError]):
+def consolidate_failure_cases(schema_errors: list[SchemaError]):
     """Consolidate schema error dicts to produce data for error message."""
     assert schema_errors, (
         "schema_errors input cannot be empty. Check how the backend "
@@ -258,9 +257,9 @@ except SchemaErrors as err:
 
 def summarize_failure_cases(
     schema_name: str,
-    schema_errors: List[SchemaError],
+    schema_errors: list[SchemaError],
     failure_cases: pd.DataFrame,
-) -> Tuple[str, Dict[str, int]]:
+) -> tuple[str, dict[str, int]]:
     """Format error message."""
 
     error_counts = defaultdict(int)  # type: ignore

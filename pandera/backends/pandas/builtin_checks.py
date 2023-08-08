@@ -213,7 +213,7 @@ def notin(data: PandasData, forbidden_values: Iterable) -> PandasData:
 )
 def str_matches(
     data: PandasData,
-    pattern: Union[str, re.Pattern],
+    pattern: str | re.Pattern,
 ) -> PandasData:
     """Ensure that string values match a regular expression.
 
@@ -229,7 +229,7 @@ def str_matches(
 )
 def str_contains(
     data: PandasData,
-    pattern: Union[str, re.Pattern],
+    pattern: str | re.Pattern,
 ) -> PandasData:
     """Ensure that a pattern can be found within each row.
 

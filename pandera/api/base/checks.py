@@ -9,9 +9,6 @@ from typing import (
     Dict,
     Iterable,
     NamedTuple,
-    Optional,
-    Tuple,
-    Type,
     TypeVar,
     Union,
     no_type_check,
@@ -20,7 +17,7 @@ from typing import (
 import pandas as pd
 from multimethod import multidispatch as _multidispatch
 
-from pandera.backends.base import BaseCheckBackend
+from pandera.backends.base.backends import BaseCheckBackend
 
 
 class CheckResult(NamedTuple):
@@ -84,8 +81,8 @@ class multidispatch(_multidispatch):
 class MetaCheck(type):  # pragma: no cover
     """Check metaclass."""
 
-    BACKEND_REGISTRY: Dict[
-        Tuple[Type, Type], Type[BaseCheckBackend]
+    BACKEND_REGISTRY: dict[
+        tuple[type, type], type[BaseCheckBackend]
     ] = {}  # noqa
     """Registry of check backends implemented for specific data objects."""
 
@@ -123,7 +120,7 @@ class MetaCheck(type):  # pragma: no cover
     # see https://mypy.readthedocs.io/en/stable/metaclasses.html#gotchas-and-limitations-of-metaclass-support
     # pylint: enable=line-too-long
     @no_type_check
-    def __contains__(cls: Type[_T], item: Union[_T, str]) -> bool:
+    def __contains__(cls: type[_T], item: _T | str) -> bool:
         """Allow lookups for registered checks."""
         if isinstance(item, cls):
             name = item.name
@@ -138,9 +135,9 @@ class BaseCheck(metaclass=MetaCheck):
 
     def __init__(
         self,
-        name: Optional[str] = None,
-        error: Optional[str] = None,
-        statistics: Optional[Dict[str, Any]] = None,
+        name: str | None = None,
+        error: str | None = None,
+        statistics: dict[str, Any] | None = None,
     ):
         self.name = name
         self.error = error
@@ -162,8 +159,8 @@ class BaseCheck(metaclass=MetaCheck):
         cls,
         name: str,
         init_kwargs,
-        error: Union[str, Callable],
-        statistics: Dict[str, Any] = None,
+        error: str | Callable,
+        statistics: dict[str, Any] = None,
         **check_kwargs,
     ):
         """Create a Check object from a built-in check's name."""
@@ -182,12 +179,12 @@ class BaseCheck(metaclass=MetaCheck):
         )
 
     @classmethod
-    def register_backend(cls, type_: Type, backend: Type[BaseCheckBackend]):
+    def register_backend(cls, type_: type, backend: type[BaseCheckBackend]):
         """Register a backend for the specified type."""
         cls.BACKEND_REGISTRY[(cls, type_)] = backend
 
     @classmethod
-    def get_backend(cls, check_obj: Any) -> Type[BaseCheckBackend]:
+    def get_backend(cls, check_obj: Any) -> type[BaseCheckBackend]:
         """Get the backend associated with the type of ``check_obj`` ."""
 
         check_obj_cls = type(check_obj)

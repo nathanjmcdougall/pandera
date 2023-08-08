@@ -1,7 +1,7 @@
 """Engine module utilities."""
 from __future__ import annotations
 
-from typing import Any, Union
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -40,7 +40,7 @@ def numpy_pandas_coercible(series: pd.Series, type_: Any) -> pd.Series:
 
 
 def numpy_pandas_coerce_failure_cases(
-    data_container: Union[PandasObject, np.ndarray], type_: Any
+    data_container: PandasObject | np.ndarray, type_: Any
 ) -> PandasObject:
     """
     Get the failure cases resulting from trying to coerce a pandas/numpy object

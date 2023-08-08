@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import warnings
-from typing import Any, Dict, Union
+from typing import Any
 
 import pandas as pd
 
@@ -11,7 +11,7 @@ from pandera.api.checks import Check
 from pandera.engines import pandas_engine
 
 
-def infer_dataframe_statistics(df: pd.DataFrame) -> Dict[str, Any]:
+def infer_dataframe_statistics(df: pd.DataFrame) -> dict[str, Any]:
     """Infer column and index statistics from a pandas DataFrame."""
     nullable_columns = df.isna().any()
     inferred_column_dtypes = {col: _get_array_type(df[col]) for col in df}
@@ -29,7 +29,7 @@ def infer_dataframe_statistics(df: pd.DataFrame) -> Dict[str, Any]:
     }
 
 
-def infer_series_statistics(series: pd.Series) -> Dict[str, Any]:
+def infer_series_statistics(series: pd.Series) -> dict[str, Any]:
     """Infer column and index statistics from a pandas Series."""
     dtype = _get_array_type(series)
     return {
@@ -40,7 +40,7 @@ def infer_series_statistics(series: pd.Series) -> Dict[str, Any]:
     }
 
 
-def infer_index_statistics(index: Union[pd.Index, pd.MultiIndex]):
+def infer_index_statistics(index: pd.Index | pd.MultiIndex):
     """Infer index statistics given a pandas Index object."""
 
     def _index_stats(index_level):
@@ -68,7 +68,7 @@ def infer_index_statistics(index: Union[pd.Index, pd.MultiIndex]):
     return index_statistics if index_statistics else None
 
 
-def parse_check_statistics(check_stats: Union[Dict[str, Any], None]):
+def parse_check_statistics(check_stats: dict[str, Any] | None):
     """Convert check statistics to a list of Check objects."""
     if check_stats is None:
         return None
@@ -142,7 +142,7 @@ def get_series_schema_statistics(series_schema):
     return _get_series_base_schema_statistics(series_schema)
 
 
-def parse_checks(checks) -> Union[Dict[str, Any], None]:
+def parse_checks(checks) -> dict[str, Any] | None:
     """Convert Check object to check statistics."""
     check_statistics = {}
     _check_memo = {}
@@ -194,7 +194,7 @@ def _get_array_type(x):
 
 def _get_array_check_statistics(
     x, data_type: dtypes.DataType
-) -> Union[Dict[str, Any], None]:
+) -> dict[str, Any] | None:
     """Get check statistics from an array-like object."""
     if x.isna().all():
         return None

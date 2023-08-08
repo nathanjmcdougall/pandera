@@ -5,21 +5,11 @@ import builtins
 import dataclasses
 import datetime
 import decimal
+import importlib.util
 import inspect
 import sys
 import warnings
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    Iterable,
-    List,
-    NamedTuple,
-    Optional,
-    Type,
-    Union,
-    cast,
-)
+from typing import Any, Callable, Iterable, NamedTuple, Union, cast
 
 import numpy as np
 import pandas as pd
@@ -45,12 +35,7 @@ from pandera.system import FLOAT_128_AVAILABLE
 # pylint:disable=missing-class-docstring
 
 
-try:
-    import pyarrow  # pylint: disable=unused-import
-
-    PYARROW_INSTALLED = True
-except ImportError:
-    PYARROW_INSTALLED = False
+PYARROW_INSTALLED = importlib.util.find_spec("pyarrow") is not None
 
 
 PANDAS_1_2_0_PLUS = pandas_version().release >= (1, 2, 0)
@@ -72,7 +57,7 @@ except ImportError:
 
 def is_extension_dtype(
     pd_dtype: PandasDataType,
-) -> Union[bool, Iterable[bool]]:
+) -> bool | Iterable[bool]:
     """Check if a value is a pandas extension type or instance of one."""
     return isinstance(pd_dtype, PandasExtensionType) or (
         isinstance(pd_dtype, type)
@@ -149,8 +134,8 @@ class DataType(dtypes.DataType):
     def check(
         self,
         pandera_dtype: dtypes.DataType,
-        data_container: Optional[PandasObject] = None,
-    ) -> Union[bool, Iterable[bool]]:
+        data_container: PandasObject | None = None,
+    ) -> bool | Iterable[bool]:
         try:
             pandera_dtype = Engine.dtype(pandera_dtype)
         except TypeError:
@@ -269,7 +254,7 @@ class BOOL(DataType, dtypes.Bool):
 
 
 def _register_numpy_numbers(
-    builtin_name: str, pandera_name: str, sizes: List[int]
+    builtin_name: str, pandera_name: str, sizes: list[int]
 ) -> None:
     """Register pandera.engines.numpy_engine DataTypes
     with the pandas engine."""
@@ -457,8 +442,8 @@ _register_numpy_numbers(
 
 def _check_decimal(
     pandas_obj: pd.Series,
-    precision: Optional[int] = None,
-    scale: Optional[int] = None,
+    precision: int | None = None,
+    scale: int | None = None,
 ) -> pd.Series:
     series_cls = type(pandas_obj)  # support non-pandas series (modin, etc.)
     if pandas_obj.isnull().all():
@@ -528,7 +513,7 @@ class Decimal(DataType, dtypes.Decimal):
         self,
         precision: int = dtypes.DEFAULT_PYTHON_PREC,
         scale: int = 0,
-        rounding: Optional[str] = None,
+        rounding: str | None = None,
     ) -> None:
         dtypes.Decimal.__init__(self, precision, scale, rounding)
 
@@ -547,8 +532,8 @@ class Decimal(DataType, dtypes.Decimal):
     def check(  # type: ignore
         self,
         pandera_dtype: DataType,
-        data_container: Optional[pd.Series] = None,
-    ) -> Union[bool, Iterable[bool]]:
+        data_container: pd.Series | None = None,
+    ) -> bool | Iterable[bool]:
         if type(data_container).__module__.startswith("pyspark.pandas"):
             raise NotImplementedError(
                 "Decimal is not yet supported for pyspark."
@@ -588,7 +573,7 @@ class Category(DataType, dtypes.Category):
     type: pd.CategoricalDtype = dataclasses.field(default=None, init=False)  # type: ignore[assignment]  # noqa
 
     def __init__(  # pylint:disable=super-init-not-called
-        self, categories: Optional[Iterable[Any]] = None, ordered: bool = False
+        self, categories: Iterable[Any] | None = None, ordered: bool = False
     ) -> None:
         dtypes.Category.__init__(self, categories, ordered)
         object.__setattr__(
@@ -616,7 +601,7 @@ class Category(DataType, dtypes.Category):
 
     @classmethod
     def from_parametrized_dtype(
-        cls, cat: Union[dtypes.Category, pd.CategoricalDtype]
+        cls, cat: dtypes.Category | pd.CategoricalDtype
     ):
         """Convert a categorical to
         a Pandera :class:`pandera.dtypes.pandas_engine.Category`."""
@@ -631,7 +616,7 @@ if PANDAS_1_3_0_PLUS:
         """Semantic representation of a :class:`pandas.StringDtype`."""
 
         type: pd.StringDtype = dataclasses.field(default=None, init=False)  # type: ignore[assignment]
-        storage: Optional[Literal["python", "pyarrow"]] = "python"
+        storage: Literal["python", "pyarrow"] | None = "python"
 
         def __post_init__(self):
             if self.storage == "pyarrow" and not PYARROW_INSTALLED:
@@ -674,8 +659,8 @@ class NpString(numpy_engine.String):
 
     def coerce(
         self,
-        data_container: Union[PandasObject, np.ndarray],
-    ) -> Union[PandasObject, np.ndarray]:
+        data_container: PandasObject | np.ndarray,
+    ) -> PandasObject | np.ndarray:
         def _to_str(obj):
             # NOTE: this is a hack to handle the following case:
             # pyspark.pandas.Index doesn't support .where method yet, use numpy
@@ -702,8 +687,8 @@ class NpString(numpy_engine.String):
     def check(
         self,
         pandera_dtype: dtypes.DataType,
-        data_container: Optional[PandasObject] = None,
-    ) -> Union[bool, Iterable[bool]]:
+        data_container: PandasObject | None = None,
+    ) -> bool | Iterable[bool]:
         if data_container is None:
             return isinstance(pandera_dtype, (numpy_engine.Object, type(self)))
 
@@ -747,7 +732,7 @@ _PandasDatetime = Union[np.datetime64, pd.DatetimeTZDtype]
 
 @immutable(init=True)
 class _BaseDateTime(DataType):
-    to_datetime_kwargs: Dict[str, Any] = dataclasses.field(
+    to_datetime_kwargs: dict[str, Any] = dataclasses.field(
         default_factory=dict, compare=False, repr=False
     )
 
@@ -793,21 +778,19 @@ class DateTime(_BaseDateTime, dtypes.Timestamp):
     :class:`pandas.DatetimeTZDtype` for timezone-aware datetimes.
     """
 
-    type: Optional[_PandasDatetime] = dataclasses.field(
-        default=None, init=False
-    )
+    type: _PandasDatetime | None = dataclasses.field(default=None, init=False)
     unit: str = "ns"
     """The precision of the datetime data. Currently limited to "ns"."""
 
-    tz: Optional[datetime.tzinfo] = None
+    tz: datetime.tzinfo | None = None
     """The timezone."""
 
-    to_datetime_kwargs: Dict[str, Any] = dataclasses.field(
+    to_datetime_kwargs: dict[str, Any] = dataclasses.field(
         default_factory=dict, compare=False, repr=False
     )
     "Any additional kwargs passed to :func:`pandas.to_datetime` for coercion."
 
-    tz_localize_kwargs: Dict[str, Any] = dataclasses.field(
+    tz_localize_kwargs: dict[str, Any] = dataclasses.field(
         default_factory=dict, compare=False, repr=False
     )
     "Keyword arguments passed to :func:`pandas.Series.dt.tz_localize` for coercion."
@@ -906,7 +889,7 @@ class Date(_BaseDateTime, dtypes.Date):
 
     type = np.dtype("object")
 
-    to_datetime_kwargs: Dict[str, Any] = dataclasses.field(
+    to_datetime_kwargs: dict[str, Any] = dataclasses.field(
         default_factory=dict, compare=False, repr=False
     )
     "Any additional kwargs passed to :func:`pandas.to_datetime` for coercion."
@@ -914,7 +897,7 @@ class Date(_BaseDateTime, dtypes.Date):
     # define __init__ to please mypy
     def __init__(  # pylint:disable=super-init-not-called
         self,
-        to_datetime_kwargs: Optional[Dict[str, Any]] = None,
+        to_datetime_kwargs: dict[str, Any] | None = None,
     ) -> None:
         object.__setattr__(
             self, "to_datetime_kwargs", to_datetime_kwargs or {}
@@ -948,8 +931,8 @@ class Date(_BaseDateTime, dtypes.Date):
     def check(  # type: ignore
         self,
         pandera_dtype: DataType,
-        data_container: Optional[pd.Series] = None,
-    ) -> Union[bool, Iterable[bool]]:
+        data_container: pd.Series | None = None,
+    ) -> bool | Iterable[bool]:
         if not DataType.check(self, pandera_dtype, data_container):
             if data_container is None:
                 return False
@@ -989,7 +972,7 @@ class Period(DataType):
     """Representation of pandas :class:`pd.Period`."""
 
     type: pd.PeriodDtype = dataclasses.field(default=None, init=False)  # type: ignore[assignment]  # noqa
-    freq: Union[str, pd.tseries.offsets.DateOffset]
+    freq: str | pd.tseries.offsets.DateOffset
 
     def __post_init__(self):
         object.__setattr__(self, "type", pd.PeriodDtype(freq=self.freq))
@@ -1037,7 +1020,7 @@ class Interval(DataType):
     """Representation of pandas :class:`pd.IntervalDtype`."""
 
     type: pd.IntervalDtype = dataclasses.field(default=None, init=False)  # type: ignore[assignment]  # noqa
-    subtype: Union[str, np.dtype]
+    subtype: str | np.dtype
 
     def __post_init__(self):
         object.__setattr__(
@@ -1086,11 +1069,11 @@ if GEOPANDAS_INSTALLED:
 class PydanticModel(DataType):
     """A pydantic model datatype applying to rows in a dataframe."""
 
-    type: Type[BaseModel] = dataclasses.field(default=None, init=False)  # type: ignore # noqa
+    type: type[BaseModel] = dataclasses.field(default=None, init=False)  # type: ignore # noqa
     auto_coerce = True
 
     # pylint:disable=super-init-not-called
-    def __init__(self, model: Type[BaseModel]) -> None:
+    def __init__(self, model: type[BaseModel]) -> None:
         object.__setattr__(self, "type", model)
 
     def coerce(self, data_container: PandasObject) -> PandasObject:
@@ -1145,7 +1128,7 @@ class PythonGenericType(DataType):
     type: Any = dataclasses.field(default=None, init=False)  # type: ignore
     generic_type: Any = dataclasses.field(default=None, init=False)
     special_type: Any = dataclasses.field(default=None, init=False)
-    coercion_model: Type[BaseModel] = dataclasses.field(  # type: ignore
+    coercion_model: type[BaseModel] = dataclasses.field(  # type: ignore
         default=None, init=False
     )
     _pandas_type = object
@@ -1171,8 +1154,8 @@ class PythonGenericType(DataType):
     def check(
         self,
         pandera_dtype: dtypes.DataType,
-        data_container: Optional[PandasObject] = None,
-    ) -> Union[bool, Iterable[bool]]:
+        data_container: PandasObject | None = None,
+    ) -> bool | Iterable[bool]:
         """Check that data container has the expected type."""
         try:
             pandera_dtype = Engine.dtype(pandera_dtype)
@@ -1220,10 +1203,10 @@ class PythonGenericType(DataType):
 class PythonDict(PythonGenericType):
     """A datatype to support python generics."""
 
-    type: Type[dict] = dict
+    type: type[dict] = dict
 
     def __init__(  # pylint:disable=super-init-not-called
-        self, generic_type: Optional[Type] = None
+        self, generic_type: type | None = None
     ) -> None:
         if generic_type is not None:
             object.__setattr__(self, "generic_type", generic_type)
@@ -1241,10 +1224,10 @@ class PythonDict(PythonGenericType):
 class PythonList(PythonGenericType):
     """A datatype to support python generics."""
 
-    type: Type[list] = list
+    type: type[list] = list
 
     def __init__(  # pylint:disable=super-init-not-called
-        self, generic_type: Optional[Type] = None
+        self, generic_type: type | None = None
     ) -> None:
         if generic_type is not None:
             object.__setattr__(self, "generic_type", generic_type)
@@ -1262,10 +1245,10 @@ class PythonList(PythonGenericType):
 class PythonTuple(PythonGenericType):
     """A datatype to support python generics."""
 
-    type: Type[list] = list
+    type: type[list] = list
 
     def __init__(  # pylint:disable=super-init-not-called
-        self, generic_type: Optional[Type] = None
+        self, generic_type: type | None = None
     ) -> None:
         if generic_type is not None:
             object.__setattr__(self, "generic_type", generic_type)
@@ -1287,7 +1270,7 @@ class PythonTypedDict(PythonGenericType):
 
     def __init__(  # pylint:disable=super-init-not-called
         self,
-        special_type: Optional[Type] = None,
+        special_type: type | None = None,
     ) -> None:
         if special_type is not None:
             object.__setattr__(self, "special_type", special_type)
@@ -1315,7 +1298,7 @@ class PythonNamedTuple(PythonGenericType):
 
     def __init__(  # pylint:disable=super-init-not-called
         self,
-        special_type: Optional[Type] = None,
+        special_type: type | None = None,
     ) -> None:
         if special_type is not None:
             object.__setattr__(self, "special_type", special_type)

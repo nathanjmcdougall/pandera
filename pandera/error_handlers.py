@@ -1,7 +1,6 @@
 """Handle schema errors."""
 from __future__ import annotations
 
-from typing import List, Optional
 
 from pandera.errors import SchemaError, SchemaErrorReason, SchemaErrors
 
@@ -16,7 +15,7 @@ class SchemaErrorHandler:
             SchemaError objects. Otherwise raise a SchemaError immediately.
         """
         self._lazy = lazy
-        self._collected_errors: List[SchemaError] = []  # type: ignore
+        self._collected_errors: list[SchemaError] = []  # type: ignore
 
     @property
     def lazy(self) -> bool:
@@ -25,7 +24,7 @@ class SchemaErrorHandler:
 
     def collect_error(
         self,
-        reason_code: Optional[SchemaErrorReason],
+        reason_code: SchemaErrorReason | None,
         schema_error: SchemaError,
         original_exc: BaseException = None,
     ):
@@ -68,6 +67,6 @@ class SchemaErrorHandler:
             )
 
     @property
-    def collected_errors(self) -> List[SchemaError]:
+    def collected_errors(self) -> list[SchemaError]:
         """Retrieve SchemaError objects collected during lazy validation."""
         return self._collected_errors

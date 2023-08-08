@@ -3,7 +3,6 @@ from __future__ import annotations
 
 from collections import defaultdict
 from enum import Enum
-from typing import Dict, List, Union
 
 from pandera.api.checks import Check
 from pandera.errors import SchemaError, SchemaErrorReason
@@ -67,7 +66,7 @@ class ErrorHandler:
         )
 
     @property
-    def collected_errors(self) -> List[Dict[str, Union[SchemaError, str]]]:
+    def collected_errors(self) -> list[dict[str, SchemaError | str]]:
         """Retrieve SchemaError objects collected during lazy validation."""
         return self._collected_errors
 

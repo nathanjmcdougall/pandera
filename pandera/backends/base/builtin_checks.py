@@ -10,7 +10,7 @@ from __future__ import annotations
 
 # pylint: disable=missing-function-docstring
 import re
-from typing import Any, Iterable, TypeVar, Union
+from typing import Any, Iterable, TypeVar
 
 from pandera.api.checks import Check
 
@@ -69,12 +69,12 @@ def notin(data: Any, forbidden_values: Iterable) -> Any:
 
 
 @Check.register_builtin_check_fn
-def str_matches(data: Any, pattern: Union[str, re.Pattern]) -> Any:
+def str_matches(data: Any, pattern: str | re.Pattern) -> Any:
     raise NotImplementedError
 
 
 @Check.register_builtin_check_fn
-def str_contains(data: Any, pattern: Union[str, re.Pattern]) -> Any:
+def str_contains(data: Any, pattern: str | re.Pattern) -> Any:
     raise NotImplementedError
 
 

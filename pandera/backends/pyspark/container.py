@@ -4,7 +4,7 @@ from __future__ import annotations
 import copy
 import traceback
 import warnings
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from pyspark.sql import DataFrame
 from pyspark.sql.functions import col
@@ -86,10 +86,10 @@ class DataFrameSchemaBackend(PysparkSchemaBackend):
         check_obj: DataFrame,
         schema,
         *,
-        head: Optional[int] = None,  # pylint: disable=unused-argument
-        tail: Optional[int] = None,  # pylint: disable=unused-argument
-        sample: Optional[int] = None,
-        random_state: Optional[int] = None,
+        head: int | None = None,  # pylint: disable=unused-argument
+        tail: int | None = None,  # pylint: disable=unused-argument
+        sample: int | None = None,
+        random_state: int | None = None,
         lazy: bool = False,
         inplace: bool = False,
         error_handler: ErrorHandler = None,
@@ -158,9 +158,9 @@ class DataFrameSchemaBackend(PysparkSchemaBackend):
     def run_schema_component_checks(
         self,
         check_obj: DataFrame,
-        schema_components: List,
+        schema_components: list,
         lazy: bool,
-        error_handler: Optional[ErrorHandler],
+        error_handler: ErrorHandler | None,
     ):
         """Run checks for all schema components."""
         assert (
@@ -233,9 +233,9 @@ class DataFrameSchemaBackend(PysparkSchemaBackend):
         lazy: bool,
     ) -> ColumnInfo:
         """Collect column metadata."""
-        column_names: List[Any] = []
-        absent_column_names: List[Any] = []
-        lazy_exclude_column_names: List[Any] = []
+        column_names: list[Any] = []
+        absent_column_names: list[Any] = []
+        lazy_exclude_column_names: list[Any] = []
 
         for col_name, col_schema in schema.columns.items():
             if (
@@ -500,7 +500,7 @@ class DataFrameSchemaBackend(PysparkSchemaBackend):
         """Check for column name uniquness."""
         if not schema.unique_column_names:
             return
-        column_count_dict: Dict[Any, Any] = {}
+        column_count_dict: dict[Any, Any] = {}
         failed = []
         for column_name in check_obj.columns:
             if column_count_dict.get(column_name):

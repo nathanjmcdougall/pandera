@@ -2,11 +2,12 @@
 from __future__ import annotations
 
 import dataclasses
+import importlib.util
 import inspect
 import re
 import sys
 import warnings
-from typing import Any, Iterable, Optional, Union
+from typing import Any, Iterable
 
 import pyspark.sql.types as pst
 
@@ -24,13 +25,7 @@ from pandera.engines.type_aliases import PysparkObject
 # pylint:disable=unexpected-keyword-arg,no-value-for-parameter
 
 
-try:
-    import pyarrow  # pylint:disable=unused-import
-
-    PYARROW_INSTALLED = True
-except ImportError:  # pragma: no cover
-    PYARROW_INSTALLED = False
-
+PYARROW_INSTALLED = importlib.util.find_spec("pyarrow") is not None
 
 DEFAULT_PYSPARK_PREC = pst.DecimalType().precision
 DEFAULT_PYSPARK_SCALE = pst.DecimalType().scale
@@ -75,8 +70,8 @@ class DataType(dtypes.DataType):
     def check(
         self,
         pandera_dtype: dtypes.DataType,
-        data_container: Optional[Any] = None,  # pylint:disable=unused-argument
-    ) -> Union[bool, Iterable[bool]]:
+        data_container: Any | None = None,  # pylint:disable=unused-argument
+    ) -> bool | Iterable[bool]:
         try:
             return self.type == pandera_dtype.type
         except TypeError:  # pragma: no cover
@@ -287,7 +282,7 @@ class Decimal(DataType, dtypes.Decimal):  # type: ignore
         self,
         pandera_dtype: dtypes.DataType,
         data_container: Any = None,  # pylint: disable=unused-argument)
-    ) -> Union[bool, Iterable[bool]]:
+    ) -> bool | Iterable[bool]:
         try:
             pandera_dtype = Engine.dtype(pandera_dtype)
             assert isinstance(
@@ -407,7 +402,7 @@ class ArrayType(DataType):
         self,
         pandera_dtype: dtypes.DataType,
         data_container: Any = None,  # pylint:disable=unused-argument
-    ) -> Union[bool, Iterable[bool]]:
+    ) -> bool | Iterable[bool]:
         try:
             pandera_dtype = Engine.dtype(pandera_dtype)
         except TypeError:  # pragma: no cover
@@ -469,7 +464,7 @@ class MapType(DataType):
         self,
         pandera_dtype: dtypes.DataType,
         data_container: Any = None,  # pylint:disable=unused-argument
-    ) -> Union[bool, Iterable[bool]]:
+    ) -> bool | Iterable[bool]:
         try:
             pandera_dtype = Engine.dtype(pandera_dtype)
         except TypeError:  # pragma: no cover

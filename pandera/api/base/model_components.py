@@ -4,11 +4,8 @@ from __future__ import annotations
 from typing import (
     Any,
     Callable,
-    Dict,
     Iterable,
     List,
-    Optional,
-    Type,
     Union,
     cast,
 )
@@ -19,7 +16,7 @@ CheckArg = Union[Check, List[Check]]
 AnyCallable = Callable[..., Any]
 
 
-def to_checklist(checks: Optional[CheckArg]) -> List[Check]:
+def to_checklist(checks: CheckArg | None) -> list[Check]:
     """Convert value to list of checks."""
     checks = checks or []
     return [checks] if isinstance(checks, Check) else checks
@@ -49,18 +46,18 @@ class BaseFieldInfo:
 
     def __init__(
         self,
-        checks: Optional[CheckArg] = None,
+        checks: CheckArg | None = None,
         nullable: bool = False,
         unique: bool = False,
         coerce: bool = False,
         regex: bool = False,
         alias: Any = None,
-        check_name: Optional[bool] = None,
-        dtype_kwargs: Optional[Dict[str, Any]] = None,
-        title: Optional[str] = None,
-        description: Optional[str] = None,
-        default: Optional[Any] = None,
-        metadata: Optional[dict] = None,
+        check_name: bool | None = None,
+        dtype_kwargs: dict[str, Any] | None = None,
+        title: str | None = None,
+        description: str | None = None,
+        default: Any | None = None,
+        metadata: dict | None = None,
     ) -> None:
         self.checks = to_checklist(checks)
         self.nullable = nullable
@@ -83,10 +80,10 @@ class BaseFieldInfo:
             return self.alias
         return self.original_name
 
-    def __set_name__(self, owner: Type, name: str) -> None:
+    def __set_name__(self, owner: type, name: str) -> None:
         self.original_name = name
 
-    def __get__(self, instance: Any, owner: Type) -> str:
+    def __get__(self, instance: Any, owner: type) -> str:
         return self.name
 
     def __str__(self):
@@ -119,7 +116,7 @@ class BaseCheckInfo:  # pylint:disable=too-few-public-methods
         self.check_fn = check_fn
         self.check_kwargs = check_kwargs
 
-    def to_check(self, model_cls: Type) -> Check:
+    def to_check(self, model_cls: type) -> Check:
         """Create a Check from metadata."""
         name = self.check_kwargs.pop("name", None)
         if not name:
@@ -127,7 +124,7 @@ class BaseCheckInfo:  # pylint:disable=too-few-public-methods
                 self.check_fn, "__name__", self.check_fn.__class__.__name__
             )
 
-        def _adapter(arg: Any) -> Union[bool, Iterable[bool]]:
+        def _adapter(arg: Any) -> bool | Iterable[bool]:
             return self.check_fn(model_cls, arg)
 
         return Check(_adapter, name=name, **self.check_kwargs)

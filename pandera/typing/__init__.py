@@ -5,8 +5,6 @@ the typing module.
 """
 from __future__ import annotations
 
-from typing import Set, Type
-
 from pandera.typing import (
     dask,
     fastapi,
@@ -51,9 +49,9 @@ from pandera.typing.common import (
 )
 from pandera.typing.pandas import DataFrame, Index, Series
 
-DATAFRAME_TYPES: Set[Type] = {DataFrame}
-SERIES_TYPES: Set[Type] = {Series}
-INDEX_TYPES: Set[Type] = {Index}
+DATAFRAME_TYPES: set[type] = {DataFrame}
+SERIES_TYPES: set[type] = {Series}
+INDEX_TYPES: set[type] = {Index}
 
 if dask.DASK_INSTALLED:
     DATAFRAME_TYPES.update({dask.DataFrame})

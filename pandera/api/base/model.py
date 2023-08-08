@@ -4,14 +4,8 @@ from __future__ import annotations
 import os
 from typing import (
     Any,
-    Dict,
-    List,
     Mapping,
-    Optional,
-    Tuple,
-    Type,
     TypeVar,
-    Union,
 )
 
 from pandera.api.base.model_components import BaseFieldInfo
@@ -35,24 +29,24 @@ class MetaModel(type):
 class BaseModel(metaclass=MetaModel):
     """Base class for a Data Object Model."""
 
-    Config: Type[BaseModelConfig] = BaseModelConfig
-    __extras__: Optional[Dict[str, Any]] = None
-    __schema__: Optional[Any] = None
-    __config__: Optional[Type[BaseModelConfig]] = None
+    Config: type[BaseModelConfig] = BaseModelConfig
+    __extras__: dict[str, Any] | None = None
+    __schema__: Any | None = None
+    __config__: type[BaseModelConfig] | None = None
 
     #: Key according to `FieldInfo.name`
-    __fields__: Mapping[str, Tuple[AnnotationInfo, BaseFieldInfo]] = {}
-    __checks__: Dict[str, List[Check]] = {}
-    __root_checks__: List[Check] = []
+    __fields__: Mapping[str, tuple[AnnotationInfo, BaseFieldInfo]] = {}
+    __checks__: dict[str, list[Check]] = {}
+    __root_checks__: list[Check] = []
 
     # This is syntantic sugar that delegates to the validate method
     def __new__(cls, *args, **kwargs) -> Any:
         raise NotImplementedError
 
     def __class_getitem__(
-        cls: Type[TBaseModel],
-        params: Union[Type[Any], Tuple[Type[Any], ...]],
-    ) -> Type[TBaseModel]:
+        cls: type[TBaseModel],
+        params: type[Any] | tuple[type[Any], ...],
+    ) -> type[TBaseModel]:
         """
         Parameterize the class's generic arguments with the specified types.
 
@@ -66,18 +60,18 @@ class BaseModel(metaclass=MetaModel):
         raise NotImplementedError
 
     @classmethod
-    def to_yaml(cls, stream: Optional[os.PathLike] = None):
+    def to_yaml(cls, stream: os.PathLike | None = None):
         """Convert `Schema` to yaml using `io.to_yaml`."""
         raise NotImplementedError
 
     @classmethod
     def validate(
-        cls: Type[TBaseModel],
+        cls: type[TBaseModel],
         check_obj: Any,
-        head: Optional[int] = None,
-        tail: Optional[int] = None,
-        sample: Optional[int] = None,
-        random_state: Optional[int] = None,
+        head: int | None = None,
+        tail: int | None = None,
+        sample: int | None = None,
+        random_state: int | None = None,
         lazy: bool = False,
         inplace: bool = False,
     ) -> Any:
@@ -85,12 +79,12 @@ class BaseModel(metaclass=MetaModel):
         raise NotImplementedError
 
     @classmethod
-    def strategy(cls: Type[TBaseModel], *, size: Optional[int] = None):
+    def strategy(cls: type[TBaseModel], *, size: int | None = None):
         """Create a data synthesis strategy."""
         raise NotImplementedError
 
     @classmethod
-    def example(cls: Type[TBaseModel], *, size: Optional[int] = None) -> Any:
+    def example(cls: type[TBaseModel], *, size: int | None = None) -> Any:
         """Generate an example of this data model specification."""
         raise NotImplementedError
 

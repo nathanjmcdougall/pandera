@@ -1,7 +1,7 @@
 """FastAPI-specific types."""
 from __future__ import annotations
 
-from typing import Any, Callable, Generic, Iterable, Type
+from typing import Any, Callable, Generic, Iterable
 
 from pandera.typing.common import T
 
@@ -50,15 +50,13 @@ if FASTAPI_INSTALLED:
 
         @classmethod
         def __get_validators__(
-            cls: Type["UploadFile"],
+            cls,
         ) -> Iterable[Callable[..., Any]]:
             """Pydantic method for yielding validators."""
             yield cls.pydantic_validate
 
         @classmethod
-        def pydantic_validate(
-            cls: Type["UploadFile"], obj: Any, field: ModelField
-        ) -> Any:
+        def pydantic_validate(cls, obj: Any, field: ModelField) -> Any:
             """
             Pydantic validation method for validating dataframes in the context
             of a file upload.

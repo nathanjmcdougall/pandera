@@ -1,15 +1,19 @@
 """A flexible and expressive pandas validation library."""
+import importlib.util
 import platform
 
 import pandera.backends
+import pandera.backends.base.builtin_checks
+import pandera.backends.base.builtin_hypotheses
+import pandera.backends.pandas
 from pandera import errors, external_config, typing
 from pandera.accessors import pandas_accessor
 from pandera.api import extensions
 from pandera.api.checks import Check
 from pandera.api.hypotheses import Hypothesis
 from pandera.api.pandas.array import SeriesSchema
-from pandera.api.pandas.container import DataFrameSchema
 from pandera.api.pandas.components import Column, Index, MultiIndex
+from pandera.api.pandas.container import DataFrameSchema
 from pandera.api.pandas.model import DataFrameModel, SchemaModel
 from pandera.api.pandas.model_components import Field, check, dataframe_check
 from pandera.decorators import check_input, check_io, check_output, check_types
@@ -57,41 +61,22 @@ from pandera.engines.pandas_engine import (
     UINT64,
     pandas_version,
 )
-
-import pandera.backends.base.builtin_checks
-import pandera.backends.base.builtin_hypotheses
-import pandera.backends.pandas
-
 from pandera.schema_inference.pandas import infer_schema
 from pandera.version import __version__
-
 
 if platform.system() != "Windows":
     # pylint: disable=ungrouped-imports
     from pandera.dtypes import Complex256, Float128
 
-
-try:
-    import dask.dataframe
-
+if importlib.util.find_spec("dask.dataframe") is not None:
     from pandera.accessors import dask_accessor
-except ImportError:
-    pass
 
-
-try:
-    import pyspark.pandas
-
+if importlib.util.find_spec("pyspark.pandas") is not None:
     from pandera.accessors import pyspark_accessor
-except ImportError:
-    pass
 
-try:
-    import modin.pandas
-
+if importlib.util.find_spec("modin.pandas") is not None:
     from pandera.accessors import modin_accessor
-except ImportError:
-    pass
+
 
 __all__ = [
     # dtypes

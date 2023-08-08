@@ -8,7 +8,7 @@ import dataclasses
 import datetime
 import inspect
 import warnings
-from typing import Any, Dict, Iterable, List, Optional, Union, cast
+from typing import Any, Iterable, cast
 
 import numpy as np
 
@@ -46,8 +46,8 @@ class DataType(dtypes.DataType):
         )  # pragma: no cover
 
     def coerce(
-        self, data_container: Union[PandasObject, np.ndarray]
-    ) -> Union[PandasObject, np.ndarray]:
+        self, data_container: PandasObject | np.ndarray
+    ) -> PandasObject | np.ndarray:
         """Pure coerce without catching exceptions."""
         coerced = data_container.astype(self.type)
         if type(data_container).__module__.startswith("modin.pandas"):
@@ -60,8 +60,8 @@ class DataType(dtypes.DataType):
         return self.type.type(value)
 
     def try_coerce(
-        self, data_container: Union[PandasObject, np.ndarray]
-    ) -> Union[PandasObject, np.ndarray]:
+        self, data_container: PandasObject | np.ndarray
+    ) -> PandasObject | np.ndarray:
         try:
             return self.coerce(cast(PandasObject, data_container))
         except Exception as exc:  # pylint:disable=broad-except
@@ -120,8 +120,8 @@ class Bool(DataType, dtypes.Bool):
 
 
 def _build_number_equivalents(
-    builtin_name: str, pandera_name: str, sizes: List[int]
-) -> Dict[int, List[Union[type, str, np.dtype, dtypes.DataType]]]:
+    builtin_name: str, pandera_name: str, sizes: list[int]
+) -> dict[int, list[type | str | np.dtype | dtypes.DataType]]:
     """Return a dict of equivalent builtin, numpy, pandera dtypes
     indexed by size in bit_width."""
     builtin_type = getattr(builtins, builtin_name, None)
@@ -349,8 +349,8 @@ class String(DataType, dtypes.String):
 
     def coerce(
         self,
-        data_container: Union[PandasObject, np.ndarray],
-    ) -> Union[PandasObject, np.ndarray]:
+        data_container: PandasObject | np.ndarray,
+    ) -> PandasObject | np.ndarray:
         data_container = data_container.astype(object)
         try:
             notna = ~np.isnan(data_container)
@@ -361,9 +361,9 @@ class String(DataType, dtypes.String):
 
     def check(
         self,
-        pandera_dtype: "dtypes.DataType",
-        data_container: Optional[PandasObject] = None,
-    ) -> Union[bool, Iterable[bool]]:
+        pandera_dtype: dtypes.DataType,
+        data_container: PandasObject | None = None,
+    ) -> bool | Iterable[bool]:
         return isinstance(pandera_dtype, (Object, type(self)))
 
 

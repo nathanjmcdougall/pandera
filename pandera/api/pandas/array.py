@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import copy
 import warnings
-from typing import Any, List, Optional, TypeVar, Union, cast
+from typing import Any, TypeVar, cast
 
 import pandas as pd
 
@@ -24,17 +24,17 @@ class ArraySchema(BaseSchema):
 
     def __init__(
         self,
-        dtype: Optional[PandasDtypeInputTypes] = None,
-        checks: Optional[CheckList] = None,
+        dtype: PandasDtypeInputTypes | None = None,
+        checks: CheckList | None = None,
         nullable: bool = False,
         unique: bool = False,
         report_duplicates: UniqueSettings = "all",
         coerce: bool = False,
         name: Any = None,
-        title: Optional[str] = None,
-        description: Optional[str] = None,
-        default: Optional[Any] = None,
-        metadata: Optional[dict] = None,
+        title: str | None = None,
+        description: str | None = None,
+        default: Any | None = None,
+        metadata: dict | None = None,
         drop_invalid_rows: bool = False,
     ) -> None:
         """Initialize array schema.
@@ -130,14 +130,14 @@ class ArraySchema(BaseSchema):
         return self._dtype  # type: ignore
 
     @dtype.setter
-    def dtype(self, value: Optional[PandasDtypeInputTypes]) -> None:
+    def dtype(self, value: PandasDtypeInputTypes | None) -> None:
         """Set the pandas dtype"""
         self._dtype = pandas_engine.Engine.dtype(value) if value else None
 
     def coerce_dtype(
         self,
-        check_obj: Union[pd.Series, pd.Index],
-    ) -> Union[pd.Series, pd.Index]:
+        check_obj: pd.Series | pd.Index,
+    ) -> pd.Series | pd.Index:
         """Coerce type of a pd.Series by type specified in dtype.
 
         :param pd.Series series: One-dimensional ndarray with axis labels
@@ -149,10 +149,10 @@ class ArraySchema(BaseSchema):
     def validate(
         self,
         check_obj,
-        head: Optional[int] = None,
-        tail: Optional[int] = None,
-        sample: Optional[int] = None,
-        random_state: Optional[int] = None,
+        head: int | None = None,
+        tail: int | None = None,
+        sample: int | None = None,
+        random_state: int | None = None,
         lazy: bool = False,
         inplace: bool = False,
     ):
@@ -188,14 +188,14 @@ class ArraySchema(BaseSchema):
 
     def __call__(
         self,
-        check_obj: Union[pd.DataFrame, pd.Series],
-        head: Optional[int] = None,
-        tail: Optional[int] = None,
-        sample: Optional[int] = None,
-        random_state: Optional[int] = None,
+        check_obj: pd.DataFrame | pd.Series,
+        head: int | None = None,
+        tail: int | None = None,
+        sample: int | None = None,
+        random_state: int | None = None,
         lazy: bool = False,
         inplace: bool = False,
-    ) -> Union[pd.DataFrame, pd.Series]:
+    ) -> pd.DataFrame | pd.Series:
         """Alias for ``validate`` method."""
         return self.validate(
             check_obj, head, tail, sample, random_state, lazy, inplace
@@ -223,7 +223,7 @@ class ArraySchema(BaseSchema):
     #############################
 
     @inferred_schema_guard
-    def update_checks(self, checks: List[Check]):
+    def update_checks(self, checks: list[Check]):
         """Create a new SeriesSchema with a new set of Checks
 
         :param checks: checks to set on the new schema
@@ -265,7 +265,7 @@ class ArraySchema(BaseSchema):
             size=size,
         )
 
-    def example(self, size=None) -> Union[pd.Series, pd.Index, pd.DataFrame]:
+    def example(self, size=None) -> pd.Series | pd.Index | pd.DataFrame:
         """Generate an example of a particular size.
 
         :param size: number of elements in the generated array.
@@ -294,17 +294,17 @@ class SeriesSchema(ArraySchema):
     def __init__(
         self,
         dtype: PandasDtypeInputTypes = None,
-        checks: Optional[CheckList] = None,
+        checks: CheckList | None = None,
         index=None,
         nullable: bool = False,
         unique: bool = False,
         report_duplicates: UniqueSettings = "all",
         coerce: bool = False,
         name: str = None,
-        title: Optional[str] = None,
-        description: Optional[str] = None,
-        default: Optional[Any] = None,
-        metadata: Optional[dict] = None,
+        title: str | None = None,
+        description: str | None = None,
+        default: Any | None = None,
+        metadata: dict | None = None,
         drop_invalid_rows: bool = False,
     ) -> None:
         """Initialize series schema base object.
@@ -361,10 +361,10 @@ class SeriesSchema(ArraySchema):
     def validate(  # type: ignore [override]
         self,
         check_obj: pd.Series,
-        head: Optional[int] = None,
-        tail: Optional[int] = None,
-        sample: Optional[int] = None,
-        random_state: Optional[int] = None,
+        head: int | None = None,
+        tail: int | None = None,
+        sample: int | None = None,
+        random_state: int | None = None,
         lazy: bool = False,
         inplace: bool = False,
     ) -> pd.Series:

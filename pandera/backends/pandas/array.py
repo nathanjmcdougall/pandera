@@ -1,7 +1,7 @@
 """Pandera array backends."""
 from __future__ import annotations
 
-from typing import List, Optional, cast
+from typing import Any, Callable, List, cast
 
 import pandas as pd
 from multimethod import DispatchError
@@ -36,10 +36,10 @@ class ArraySchemaBackend(PandasSchemaBackend):
         check_obj,
         schema,
         *,
-        head: Optional[int] = None,
-        tail: Optional[int] = None,
-        sample: Optional[int] = None,
-        random_state: Optional[int] = None,
+        head: int | None = None,
+        tail: int | None = None,
+        sample: int | None = None,
+        random_state: int | None = None,
         lazy: bool = False,
         inplace: bool = False,
     ):
@@ -118,7 +118,12 @@ class ArraySchemaBackend(PandasSchemaBackend):
             random_state,
         )
 
-        core_checks = [
+        core_checks: list[
+            tuple[
+                Callable[..., CoreCheckResult | list[CoreCheckResult]],
+                tuple[Any, ...],
+            ]
+        ] = [
             (self.check_name, (field_obj_subsample, schema)),
             (self.check_nullable, (field_obj_subsample, schema)),
             (self.check_unique, (field_obj_subsample, schema)),
@@ -127,9 +132,15 @@ class ArraySchemaBackend(PandasSchemaBackend):
         ]
 
         for core_check, args in core_checks:
-            results = core_check(*args)
-            if isinstance(results, CoreCheckResult):
-                results = [results]
+            # pylint: disable=no-member
+            check_output = core_check(*args)
+            if isinstance(check_output, CoreCheckResult):
+                results = [check_output]
+            elif isinstance(check_output, list):
+                results = check_output
+            else:
+                raise AssertionError
+
             results = cast(List[CoreCheckResult], results)
             for result in results:
                 if result.passed:
@@ -289,8 +300,8 @@ class ArraySchemaBackend(PandasSchemaBackend):
         )
 
     # pylint: disable=unused-argument
-    def run_checks(self, check_obj, schema) -> List[CoreCheckResult]:
-        check_results: List[CoreCheckResult] = []
+    def run_checks(self, check_obj, schema) -> list[CoreCheckResult]:
+        check_results: list[CoreCheckResult] = []
         for check_index, check in enumerate(schema.checks):
             check_args = [None] if is_field(check_obj) else [schema.name]
             try:

@@ -4,7 +4,6 @@ from __future__ import annotations
 import functools
 import warnings
 from enum import Enum
-from typing import List, Type
 
 import pyspark.sql
 
@@ -21,7 +20,7 @@ class ValidationScope(Enum):
 
 
 def register_input_datatypes(
-    acceptable_datatypes: List[Type[PysparkDefaultTypes]] = None,
+    acceptable_datatypes: list[type[PysparkDefaultTypes]] = None,
 ):
     """
     This decorator is used to register the input datatype for the check.

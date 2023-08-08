@@ -3,11 +3,8 @@ from __future__ import annotations
 
 import warnings
 from typing import (
-    FrozenSet,
     Iterable,
-    List,
     NamedTuple,
-    Optional,
     TypeVar,
     Union,
 )
@@ -32,10 +29,10 @@ class ColumnInfo(NamedTuple):
     """Column metadata used during validation."""
 
     sorted_column_names: Iterable
-    expanded_column_names: FrozenSet
-    destuttered_column_names: List
-    absent_column_names: List
-    regex_match_patterns: List
+    expanded_column_names: frozenset
+    destuttered_column_names: list
+    absent_column_names: list
+    regex_match_patterns: list
 
 
 FieldCheckObj = Union[pd.Series, pd.DataFrame]
@@ -55,10 +52,10 @@ class PandasSchemaBackend(BaseSchemaBackend):
     def subsample(
         self,
         check_obj,
-        head: Optional[int] = None,
-        tail: Optional[int] = None,
-        sample: Optional[int] = None,
-        random_state: Optional[int] = None,
+        head: int | None = None,
+        tail: int | None = None,
+        sample: int | None = None,
+        random_state: int | None = None,
     ):
         pandas_obj_subsample = []
         if head is not None:
@@ -139,7 +136,7 @@ class PandasSchemaBackend(BaseSchemaBackend):
     def failure_cases_metadata(
         self,
         schema_name: str,
-        schema_errors: List[SchemaError],
+        schema_errors: list[SchemaError],
     ) -> FailureCaseMetadata:
         """Create failure cases metadata required for SchemaErrors exception."""
         failure_cases = consolidate_failure_cases(schema_errors)

@@ -1,7 +1,7 @@
 """Pandera mypy plugin."""
 from __future__ import annotations
 
-from typing import Callable, Optional, Union, cast
+from typing import Callable, cast
 
 from mypy.nodes import FuncBase, SymbolNode, TypeInfo
 from mypy.plugin import (
@@ -73,7 +73,7 @@ class PanderaPlugin(Plugin):
 
     def get_base_class_hook(
         self, fullname: str
-    ) -> "Optional[Callable[[ClassDefContext], None]]":
+    ) -> Callable[[ClassDefContext], None] | None:
         sym = self.lookup_fully_qualified(fullname)
         if sym and isinstance(sym.node, TypeInfo):  # pragma: no branch
             if any(
@@ -90,7 +90,7 @@ class PanderaPlugin(Plugin):
         transformer.transform()
 
     def pandas_concat_callback(
-        self, ctx: Union[FunctionSigContext, MethodSigContext]
+        self, ctx: FunctionSigContext | MethodSigContext
     ) -> CallableType:
         """Adjusts the signature pandas.concat to allow generator inputs."""
         iterable = self.lookup_fully_qualified("typing.Iterable")
@@ -150,7 +150,7 @@ class PanderaPluginConfig:
         self.options = options
 
 
-def get_fullname(x: Union[FuncBase, SymbolNode]) -> str:
+def get_fullname(x: FuncBase | SymbolNode) -> str:
     fn = x.fullname
     if callable(fn):  # pragma: no cover
         return fn()

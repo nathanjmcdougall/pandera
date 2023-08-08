@@ -6,16 +6,7 @@ import dataclasses
 import decimal
 import inspect
 from abc import ABC
-from typing import (
-    Any,
-    Callable,
-    Iterable,
-    Optional,
-    Tuple,
-    Type,
-    TypeVar,
-    Union,
-)
+from typing import Any, Callable, Iterable, Type, TypeVar, Union
 
 try:
     from typing import Literal
@@ -27,7 +18,7 @@ class DataType(ABC):
     """Base class of all Pandera data types."""
 
     type: Any = None
-    continuous: Optional[bool] = None
+    continuous: bool | None = None
     """Whether the number data type is continuous."""
     auto_coerce: bool = False
     """Whether to force coerce to be True in all cases"""
@@ -59,9 +50,9 @@ class DataType(ABC):
 
     def check(
         self,
-        pandera_dtype: "DataType",
-        data_container: Optional[Any] = None,  # pylint:disable=unused-argument
-    ) -> Union[bool, Iterable[bool]]:
+        pandera_dtype: DataType,
+        data_container: Any | None = None,  # pylint:disable=unused-argument
+    ) -> bool | Iterable[bool]:
         """Check that pandera :class:`~pandera.dtypes.DataType` are equivalent.
 
         :param pandera_dtype: Expected :class:`DataType`.
@@ -88,8 +79,8 @@ _DataTypeClass = Type[_Dtype]
 
 
 def immutable(
-    pandera_dtype_cls: Optional[_DataTypeClass] = None, **dataclass_kwargs: Any
-) -> Union[_DataTypeClass, Callable[[_DataTypeClass], _DataTypeClass]]:
+    pandera_dtype_cls: _DataTypeClass | None = None, **dataclass_kwargs: Any
+) -> _DataTypeClass | Callable[[_DataTypeClass], _DataTypeClass]:
     """:func:`dataclasses.dataclass` decorator with different default values:
     `frozen=True`, `init=False`, `repr=False`.
 
@@ -132,12 +123,12 @@ def immutable(
 class _Number(DataType):
     """Semantic representation of a numeric data type."""
 
-    exact: Optional[bool] = None
+    exact: bool | None = None
     """Whether the data type is an exact representation of a number."""
 
     def check(
-        self, pandera_dtype: "DataType", data_container: Optional[Any] = None
-    ) -> Union[bool, Iterable[bool]]:
+        self, pandera_dtype: DataType, data_container: Any | None = None
+    ) -> bool | Iterable[bool]:
         if self.__class__ is _Number:
             return isinstance(pandera_dtype, _Number)
         return super().check(pandera_dtype)
@@ -145,9 +136,9 @@ class _Number(DataType):
 
 @immutable
 class _PhysicalNumber(_Number):
-    bit_width: Optional[int] = None
+    bit_width: int | None = None
     """Number of bits used by the machine representation."""
-    _base_name: Optional[str] = dataclasses.field(
+    _base_name: str | None = dataclasses.field(
         default=None, init=False, repr=False
     )
 
@@ -189,8 +180,8 @@ class Int(_PhysicalNumber):  # type: ignore
     """Whether the integer data type is signed."""
 
     def check(
-        self, pandera_dtype: "DataType", data_container: Optional[Any] = None
-    ) -> Union[bool, Iterable[bool]]:
+        self, pandera_dtype: DataType, data_container: Any | None = None
+    ) -> bool | Iterable[bool]:
         return (
             isinstance(pandera_dtype, Int)
             and self.signed == pandera_dtype.signed
@@ -296,8 +287,8 @@ class Float(_PhysicalNumber):  # type: ignore
     bit_width = 64
 
     def check(
-        self, pandera_dtype: "DataType", data_container: Optional[Any] = None
-    ) -> Union[bool, Iterable[bool]]:
+        self, pandera_dtype: DataType, data_container: Any | None = None
+    ) -> bool | Iterable[bool]:
         return (
             isinstance(pandera_dtype, Float)
             and self.bit_width == pandera_dtype.bit_width
@@ -350,8 +341,8 @@ class Complex(_PhysicalNumber):  # type: ignore
     bit_width = 128
 
     def check(
-        self, pandera_dtype: "DataType", data_container: Optional[Any] = None
-    ) -> Union[bool, Iterable[bool]]:
+        self, pandera_dtype: DataType, data_container: Any | None = None
+    ) -> bool | Iterable[bool]:
         return (
             isinstance(pandera_dtype, Complex)
             and self.bit_width == pandera_dtype.bit_width
@@ -424,7 +415,7 @@ class Decimal(_Number):
         self,
         precision: int = DEFAULT_PYTHON_PREC,
         scale: int = 0,
-        rounding: Optional[str] = None,
+        rounding: str | None = None,
     ):
         super().__init__()
         if precision <= 0:
@@ -462,11 +453,11 @@ class Decimal(_Number):
 class Category(DataType):  # type: ignore
     """Semantic representation of a categorical data type."""
 
-    categories: Optional[Tuple[Any]] = None  # tuple to ensure safe hash
+    categories: tuple[Any] | None = None  # tuple to ensure safe hash
     ordered: bool = False
 
     def __init__(
-        self, categories: Optional[Iterable[Any]] = None, ordered: bool = False
+        self, categories: Iterable[Any] | None = None, ordered: bool = False
     ):
         # Define __init__ to avoid exposing pylint errors to end users.
         super().__init__()
@@ -475,8 +466,8 @@ class Category(DataType):  # type: ignore
         object.__setattr__(self, "ordered", ordered)
 
     def check(
-        self, pandera_dtype: "DataType", data_container: Optional[Any] = None
-    ) -> Union[bool, Iterable[bool]]:
+        self, pandera_dtype: DataType, data_container: Any | None = None
+    ) -> bool | Iterable[bool]:
         if isinstance(pandera_dtype, Category) and (
             self.categories is None or pandera_dtype.categories is None
         ):
@@ -544,8 +535,8 @@ class Binary(DataType):
 
 
 def is_subdtype(
-    arg1: Union[DataType, Type[DataType]],
-    arg2: Union[DataType, Type[DataType]],
+    arg1: DataType | type[DataType],
+    arg2: DataType | type[DataType],
 ) -> bool:
     """Returns True if first argument is lower/equal in DataType hierarchy."""
     arg1_cls = arg1 if inspect.isclass(arg1) else arg1.__class__
@@ -553,58 +544,58 @@ def is_subdtype(
     return issubclass(arg1_cls, arg2_cls)  # type: ignore
 
 
-def is_int(pandera_dtype: Union[DataType, Type[DataType]]) -> bool:
+def is_int(pandera_dtype: DataType | type[DataType]) -> bool:
     """Return True if :class:`pandera.dtypes.DataType` is an integer."""
     return is_subdtype(pandera_dtype, Int)
 
 
-def is_uint(pandera_dtype: Union[DataType, Type[DataType]]) -> bool:
+def is_uint(pandera_dtype: DataType | type[DataType]) -> bool:
     """Return True if :class:`pandera.dtypes.DataType` is
     an unsigned integer."""
     return is_subdtype(pandera_dtype, UInt)
 
 
-def is_float(pandera_dtype: Union[DataType, Type[DataType]]) -> bool:
+def is_float(pandera_dtype: DataType | type[DataType]) -> bool:
     """Return True if :class:`pandera.dtypes.DataType` is a float."""
     return is_subdtype(pandera_dtype, Float)
 
 
-def is_complex(pandera_dtype: Union[DataType, Type[DataType]]) -> bool:
+def is_complex(pandera_dtype: DataType | type[DataType]) -> bool:
     """Return True if :class:`pandera.dtypes.DataType` is a complex number."""
     return is_subdtype(pandera_dtype, Complex)
 
 
-def is_numeric(pandera_dtype: Union[DataType, Type[DataType]]) -> bool:
+def is_numeric(pandera_dtype: DataType | type[DataType]) -> bool:
     """Return True if :class:`pandera.dtypes.DataType` is a numeric."""
     return is_subdtype(pandera_dtype, _Number)
 
 
-def is_bool(pandera_dtype: Union[DataType, Type[DataType]]) -> bool:
+def is_bool(pandera_dtype: DataType | type[DataType]) -> bool:
     """Return True if :class:`pandera.dtypes.DataType` is a boolean."""
     return is_subdtype(pandera_dtype, Bool)
 
 
-def is_string(pandera_dtype: Union[DataType, Type[DataType]]) -> bool:
+def is_string(pandera_dtype: DataType | type[DataType]) -> bool:
     """Return True if :class:`pandera.dtypes.DataType` is a string."""
     return is_subdtype(pandera_dtype, String)
 
 
-def is_category(pandera_dtype: Union[DataType, Type[DataType]]) -> bool:
+def is_category(pandera_dtype: DataType | type[DataType]) -> bool:
     """Return True if :class:`pandera.dtypes.DataType` is a category."""
     return is_subdtype(pandera_dtype, Category)
 
 
-def is_datetime(pandera_dtype: Union[DataType, Type[DataType]]) -> bool:
+def is_datetime(pandera_dtype: DataType | type[DataType]) -> bool:
     """Return True if :class:`pandera.dtypes.DataType` is a datetime."""
     return is_subdtype(pandera_dtype, DateTime)
 
 
-def is_timedelta(pandera_dtype: Union[DataType, Type[DataType]]) -> bool:
+def is_timedelta(pandera_dtype: DataType | type[DataType]) -> bool:
     """Return True if :class:`pandera.dtypes.DataType` is a timedelta."""
     return is_subdtype(pandera_dtype, Timedelta)
 
 
-def is_binary(pandera_dtype: Union[DataType, Type[DataType]]) -> bool:
+def is_binary(pandera_dtype: DataType | type[DataType]) -> bool:
     """Return True if :class:`pandera.dtypes.DataType` is a timedelta."""
     return is_subdtype(pandera_dtype, Binary)
 

@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from functools import partial
-from typing import Dict, List, Optional
 
 from multimethod import DispatchError, overload
 from pyspark.sql import DataFrame
@@ -45,8 +44,8 @@ class PySparkCheckBackend(BaseCheckBackend):
     @staticmethod
     def _format_groupby_input(
         groupby_obj: GroupbyObject,
-        groups: Optional[List[str]],
-    ) -> Dict[str, DataFrame]:  # pragma: no cover
+        groups: list[str] | None,
+    ) -> dict[str, DataFrame]:  # pragma: no cover
         raise NotImplementedError
 
     @overload  # type: ignore [no-redef]
@@ -103,7 +102,7 @@ class PySparkCheckBackend(BaseCheckBackend):
     def __call__(
         self,
         check_obj: DataFrame,
-        key: Optional[str] = None,
+        key: str | None = None,
     ) -> CheckResult:
         check_obj = self.preprocess(check_obj, key)
         try:

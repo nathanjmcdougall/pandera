@@ -1,17 +1,16 @@
 """Pandas backend utilities."""
 from __future__ import annotations
 
-from typing import Union
 
 from pandera.dtypes import UniqueSettings
 
 
-def convert_uniquesettings(unique: UniqueSettings) -> Union[bool, str]:
+def convert_uniquesettings(unique: UniqueSettings) -> bool | str:
     """
     Converts UniqueSettings object to string that can be passed onto pandas .duplicated() call
     """
     # Default `keep` argument for pandas .duplicated() function
-    keep_argument: Union[bool, str]
+    keep_argument: bool | str
     if unique == "exclude_first":
         keep_argument = "first"
     elif unique == "exclude_last":

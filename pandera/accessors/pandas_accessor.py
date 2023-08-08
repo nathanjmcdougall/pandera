@@ -1,7 +1,7 @@
 """Register pandas accessor for pandera schema metadata."""
 from __future__ import annotations
 
-from typing import Optional, Union
+from typing import Union
 
 import pandas as pd
 
@@ -17,7 +17,7 @@ class PanderaAccessor:
     def __init__(self, pandas_obj):
         """Initialize the pandera accessor."""
         self._pandas_obj = pandas_obj
-        self._schema: Optional[Schemas] = None
+        self._schema: Schemas | None = None
 
     @staticmethod
     def check_schema_type(schema: Schemas):
@@ -31,7 +31,7 @@ class PanderaAccessor:
         return self._pandas_obj
 
     @property
-    def schema(self) -> Optional[Schemas]:
+    def schema(self) -> Schemas | None:
         """Access schema metadata."""
         return self._schema
 

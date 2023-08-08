@@ -4,7 +4,7 @@ from __future__ import annotations
 import copy
 import itertools
 import traceback
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, List, cast
 
 import pandas as pd
 from pydantic import BaseModel
@@ -42,10 +42,10 @@ class DataFrameSchemaBackend(PandasSchemaBackend):
         check_obj: pd.DataFrame,
         schema,
         *,
-        head: Optional[int] = None,
-        tail: Optional[int] = None,
-        sample: Optional[int] = None,
-        random_state: Optional[int] = None,
+        head: int | None = None,
+        tail: int | None = None,
+        sample: int | None = None,
+        random_state: int | None = None,
         lazy: bool = False,
         inplace: bool = False,
     ):
@@ -71,7 +71,7 @@ class DataFrameSchemaBackend(PandasSchemaBackend):
         # Collect status of columns against schema
         column_info = self.collect_column_info(check_obj, schema)
 
-        core_parsers: List[Tuple[Callable[..., Any], Tuple[Any, ...]]] = [
+        core_parsers: list[tuple[Callable[..., Any], tuple[Any, ...]]] = [
             (self.add_missing_columns, (schema, column_info)),
             (self.strict_filter_columns, (schema, column_info)),
             (self.coerce_dtype, (schema,)),
@@ -141,7 +141,12 @@ class DataFrameSchemaBackend(PandasSchemaBackend):
         sample = self.subsample(check_obj, head, tail, sample, random_state)
 
         # check the container metadata, e.g. field names
-        core_checks = [
+        core_checks: list[
+            tuple[
+                Callable[..., CoreCheckResult | list[CoreCheckResult]],
+                tuple[Any, ...],
+            ]
+        ] = [
             (self.check_column_names_are_unique, (check_obj, schema)),
             (self.check_column_presence, (check_obj, schema, column_info)),
             (self.check_column_values_are_unique, (sample, schema)),
@@ -149,11 +154,19 @@ class DataFrameSchemaBackend(PandasSchemaBackend):
             (self.run_checks, (sample, schema)),
         ]
         for check, args in core_checks:
-            results = check(*args)  # type: ignore [operator]
-            if isinstance(results, CoreCheckResult):
-                results = [results]
+            # pylint: disable=no-member
+            check_output = check(*args)
+            if isinstance(check_output, CoreCheckResult):
+                results = [check_output]
+            elif isinstance(check_output, list):
+                results = check_output
+            else:
+                raise AssertionError
+
+            results = cast(List[CoreCheckResult], results)
 
             for result in results:
+                # pylint: disable=no-member
                 if result.passed:
                     continue
 
@@ -181,9 +194,9 @@ class DataFrameSchemaBackend(PandasSchemaBackend):
     def run_schema_component_checks(
         self,
         check_obj: pd.DataFrame,
-        schema_components: List,
+        schema_components: list,
         lazy: bool,
-    ) -> List[CoreCheckResult]:
+    ) -> list[CoreCheckResult]:
         """Run checks for all schema components."""
         check_results = []
         check_passed = []
@@ -222,10 +235,10 @@ class DataFrameSchemaBackend(PandasSchemaBackend):
         self,
         check_obj: pd.DataFrame,
         schema,
-    ) -> List[CoreCheckResult]:
+    ) -> list[CoreCheckResult]:
         """Run a list of checks on the check object."""
         # dataframe-level checks
-        check_results: List[CoreCheckResult] = []
+        check_results: list[CoreCheckResult] = []
         for check_index, check in enumerate(schema.checks):
             try:
                 check_results.append(
@@ -260,9 +273,9 @@ class DataFrameSchemaBackend(PandasSchemaBackend):
         schema,
     ) -> ColumnInfo:
         """Collect column metadata."""
-        column_names: List[Any] = []
-        absent_column_names: List[Any] = []
-        regex_match_patterns: List[Any] = []
+        column_names: list[Any] = []
+        absent_column_names: list[Any] = []
+        regex_match_patterns: list[Any] = []
 
         for col_name, col_schema in schema.columns.items():
             if (
@@ -392,7 +405,7 @@ class DataFrameSchemaBackend(PandasSchemaBackend):
         # modify order of existing dataframe columns to
         # avoid ripple effects in downstream validation
         # (e.g., ordered schema).
-        schema_cols_dict: Dict[Any, None] = dict()
+        schema_cols_dict: dict[Any, None] = dict()
         for col_name, col_schema in schema.columns.items():
             if col_name in check_obj.columns or col_schema.required:
                 schema_cols_dict[col_name] = None
@@ -669,7 +682,7 @@ class DataFrameSchemaBackend(PandasSchemaBackend):
     # pylint: disable=unused-argument
     def check_column_presence(
         self, check_obj: pd.DataFrame, schema, column_info: ColumnInfo
-    ) -> List[CoreCheckResult]:
+    ) -> list[CoreCheckResult]:
         """Check for presence of specified columns in the data object."""
         results = []
         if column_info.absent_column_names and not schema.add_missing_columns:
@@ -706,7 +719,7 @@ class DataFrameSchemaBackend(PandasSchemaBackend):
         # NOTE: fix this pylint error
         # pylint: disable=not-an-iterable
         keep_setting = convert_uniquesettings(schema.report_duplicates)
-        temp_unique: List[List] = (
+        temp_unique: list[list] = (
             [schema.unique]
             if all(isinstance(x, str) for x in schema.unique)
             else schema.unique

@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from functools import partial
-from typing import Dict, List, Optional, Union, cast
+from typing import Dict, cast
 
 import pandas as pd
 from multimethod import DispatchError, overload
@@ -28,7 +28,7 @@ class PandasCheckBackend(BaseCheckBackend):
         self.check = check
         self.check_fn = partial(check._check_fn, **check._check_kwargs)
 
-    def groupby(self, check_obj: Union[pd.Series, pd.DataFrame]):
+    def groupby(self, check_obj: pd.Series | pd.DataFrame):
         """Implements groupby behavior for check object."""
         assert self.check.groupby is not None, "Check.groupby must be set."
         if isinstance(self.check.groupby, (str, list)):
@@ -46,8 +46,8 @@ class PandasCheckBackend(BaseCheckBackend):
     @staticmethod
     def _format_groupby_input(
         groupby_obj: GroupbyObject,
-        groups: Optional[List[str]],
-    ) -> Union[Dict[str, pd.Series], Dict[str, pd.DataFrame]]:
+        groups: list[str] | None,
+    ) -> dict[str, pd.Series] | dict[str, pd.DataFrame]:
         """Format groupby object into dict of groups to Series or DataFrame.
 
         :param groupby_obj: a pandas groupby object.
@@ -88,7 +88,7 @@ class PandasCheckBackend(BaseCheckBackend):
         self,
         check_obj: is_field,  # type: ignore [valid-type]
         key,
-    ) -> Union[pd.Series, Dict[str, pd.Series]]:
+    ) -> pd.Series | dict[str, pd.Series]:
         if self.check.groupby is None:
             return check_obj
         return cast(
@@ -103,7 +103,7 @@ class PandasCheckBackend(BaseCheckBackend):
         self,
         check_obj: is_table,  # type: ignore [valid-type]
         key,
-    ) -> Union[pd.DataFrame, Dict[str, pd.DataFrame]]:
+    ) -> pd.DataFrame | dict[str, pd.DataFrame]:
         if self.check.groupby is None:
             return check_obj[key]
         return cast(
@@ -118,7 +118,7 @@ class PandasCheckBackend(BaseCheckBackend):
         self,
         check_obj: is_table,  # type: ignore [valid-type]
         key: None,
-    ) -> Union[pd.DataFrame, Dict[str, pd.DataFrame]]:
+    ) -> pd.DataFrame | dict[str, pd.DataFrame]:
         if self.check.groupby is None:
             return check_obj
         return cast(
@@ -172,7 +172,7 @@ class PandasCheckBackend(BaseCheckBackend):
 
     def _get_series_failure_cases(
         self, check_obj, check_output: pd.Series
-    ) -> Optional[pd.Series]:
+    ) -> pd.Series | None:
         if not check_obj.index.equals(check_output.index):
             return None
 
@@ -288,8 +288,8 @@ class PandasCheckBackend(BaseCheckBackend):
 
     def __call__(
         self,
-        check_obj: Union[pd.Series, pd.DataFrame],
-        key: Optional[str] = None,
+        check_obj: pd.Series | pd.DataFrame,
+        key: str | None = None,
     ) -> CheckResult:
         check_obj = self.preprocess(check_obj, key)
         try:

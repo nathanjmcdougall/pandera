@@ -21,13 +21,9 @@ from functools import partial, wraps
 from typing import (
     Any,
     Callable,
-    Dict,
     Generic,
-    List,
-    Optional,
     Sequence,
     TypeVar,
-    Union,
     cast,
 )
 
@@ -75,8 +71,8 @@ F = TypeVar("F", bound=Callable)
 
 
 def _mask(
-    val: Union[pd.Series, pd.Index], null_mask: List[bool]
-) -> Union[pd.Series, pd.Index]:
+    val: pd.Series | pd.Index, null_mask: list[bool]
+) -> pd.Series | pd.Index:
     if pd.api.types.is_timedelta64_dtype(val):  # type: ignore [arg-type]
         return val.mask(null_mask, pd.NaT)  # type: ignore [union-attr,arg-type]
     elif val.dtype == pd.StringDtype():  # type: ignore [call-arg]
@@ -85,7 +81,7 @@ def _mask(
 
 
 @composite
-def null_field_masks(draw, strategy: Optional[SearchStrategy]):
+def null_field_masks(draw, strategy: SearchStrategy | None):
     """Strategy for masking a column/index with null values.
 
     :param strategy: an optional hypothesis strategy. If specified, the
@@ -104,8 +100,8 @@ def null_field_masks(draw, strategy: Optional[SearchStrategy]):
 @composite
 def null_dataframe_masks(
     draw,
-    strategy: Optional[SearchStrategy],
-    nullable_columns: Dict[str, bool],
+    strategy: SearchStrategy | None,
+    nullable_columns: dict[str, bool],
 ):
     """Strategy for masking a values in a pandas DataFrame.
 
@@ -150,9 +146,9 @@ def set_pandas_index(
 
 
 def verify_dtype(
-    pandera_dtype: Union[numpy_engine.DataType, pandas_engine.DataType],
+    pandera_dtype: numpy_engine.DataType | pandas_engine.DataType,
     schema_type: str,
-    name: Optional[str],
+    name: str | None,
 ):
     """Verify that pandera_dtype argument is not None."""
     if pandera_dtype is None:
@@ -225,7 +221,7 @@ def _is_datetime_tz(pandera_dtype: DataType) -> bool:
 
 
 def _datetime_strategy(
-    dtype: Union[np.dtype, pd.DatetimeTZDtype], strategy
+    dtype: np.dtype | pd.DatetimeTZDtype, strategy
 ) -> SearchStrategy:
     if isinstance(dtype, pd.DatetimeTZDtype):
 
@@ -244,7 +240,7 @@ def _datetime_strategy(
         return st.builds(dtype.type, strategy, res)
 
 
-def convert_dtype(array: Union[pd.Series, pd.Index], col_dtype: Any):
+def convert_dtype(array: pd.Series | pd.Index, col_dtype: Any):
     """Convert datatypes of an array (series or index)."""
     if str(col_dtype).startswith("datetime64"):
         try:
@@ -261,7 +257,7 @@ def convert_dtype(array: Union[pd.Series, pd.Index], col_dtype: Any):
     return array.astype(col_dtype)
 
 
-def convert_dtypes(df: pd.DataFrame, col_dtypes: Dict[str, Any]):
+def convert_dtypes(df: pd.DataFrame, col_dtypes: dict[str, Any]):
     """Convert datatypes of a dataframe."""
     if df.empty:
         return df
@@ -273,7 +269,7 @@ def convert_dtypes(df: pd.DataFrame, col_dtypes: Dict[str, Any]):
 
 
 def numpy_time_dtypes(
-    dtype: Union[np.dtype, pd.DatetimeTZDtype], min_value=None, max_value=None
+    dtype: np.dtype | pd.DatetimeTZDtype, min_value=None, max_value=None
 ):
     """Create numpy strategy for datetime and timedelta data types.
 
@@ -296,7 +292,7 @@ def numpy_time_dtypes(
 def numpy_complex_dtypes(
     dtype,
     min_value: complex = complex(0, 0),
-    max_value: Optional[complex] = None,
+    max_value: complex | None = None,
     allow_infinity: bool = None,
     allow_nan: bool = None,
 ):
@@ -307,8 +303,8 @@ def numpy_complex_dtypes(
     :param max_value: maximum value, must be complex number
     :returns: ``hypothesis`` strategy
     """
-    max_real: Optional[float]
-    max_imag: Optional[float]
+    max_real: float | None
+    max_imag: float | None
     if max_value:
         max_real = max_value.real
         max_imag = max_value.imag
@@ -376,7 +372,7 @@ def to_numpy_dtype(pandera_dtype: DataType):
 
 def pandas_dtype_strategy(
     pandera_dtype: DataType,
-    strategy: Optional[SearchStrategy] = None,
+    strategy: SearchStrategy | None = None,
     **kwargs,
 ) -> SearchStrategy:
     # pylint: disable=line-too-long,no-else-raise
@@ -433,8 +429,8 @@ def pandas_dtype_strategy(
 
 
 def eq_strategy(
-    pandera_dtype: Union[numpy_engine.DataType, pandas_engine.DataType],
-    strategy: Optional[SearchStrategy] = None,
+    pandera_dtype: numpy_engine.DataType | pandas_engine.DataType,
+    strategy: SearchStrategy | None = None,
     *,
     value: Any,
 ) -> SearchStrategy:
@@ -452,8 +448,8 @@ def eq_strategy(
 
 
 def ne_strategy(
-    pandera_dtype: Union[numpy_engine.DataType, pandas_engine.DataType],
-    strategy: Optional[SearchStrategy] = None,
+    pandera_dtype: numpy_engine.DataType | pandas_engine.DataType,
+    strategy: SearchStrategy | None = None,
     *,
     value: Any,
 ) -> SearchStrategy:
@@ -471,10 +467,10 @@ def ne_strategy(
 
 
 def gt_strategy(
-    pandera_dtype: Union[numpy_engine.DataType, pandas_engine.DataType],
-    strategy: Optional[SearchStrategy] = None,
+    pandera_dtype: numpy_engine.DataType | pandas_engine.DataType,
+    strategy: SearchStrategy | None = None,
     *,
-    min_value: Union[int, float],
+    min_value: int | float,
 ) -> SearchStrategy:
     """Strategy to generate values greater than a minimum value.
 
@@ -494,10 +490,10 @@ def gt_strategy(
 
 
 def ge_strategy(
-    pandera_dtype: Union[numpy_engine.DataType, pandas_engine.DataType],
-    strategy: Optional[SearchStrategy] = None,
+    pandera_dtype: numpy_engine.DataType | pandas_engine.DataType,
+    strategy: SearchStrategy | None = None,
     *,
-    min_value: Union[int, float],
+    min_value: int | float,
 ) -> SearchStrategy:
     """Strategy to generate values greater than or equal to a minimum value.
 
@@ -517,10 +513,10 @@ def ge_strategy(
 
 
 def lt_strategy(
-    pandera_dtype: Union[numpy_engine.DataType, pandas_engine.DataType],
-    strategy: Optional[SearchStrategy] = None,
+    pandera_dtype: numpy_engine.DataType | pandas_engine.DataType,
+    strategy: SearchStrategy | None = None,
     *,
-    max_value: Union[int, float],
+    max_value: int | float,
 ) -> SearchStrategy:
     """Strategy to generate values less than a maximum value.
 
@@ -540,10 +536,10 @@ def lt_strategy(
 
 
 def le_strategy(
-    pandera_dtype: Union[numpy_engine.DataType, pandas_engine.DataType],
-    strategy: Optional[SearchStrategy] = None,
+    pandera_dtype: numpy_engine.DataType | pandas_engine.DataType,
+    strategy: SearchStrategy | None = None,
     *,
-    max_value: Union[int, float],
+    max_value: int | float,
 ) -> SearchStrategy:
     """Strategy to generate values less than or equal to a maximum value.
 
@@ -563,11 +559,11 @@ def le_strategy(
 
 
 def in_range_strategy(
-    pandera_dtype: Union[numpy_engine.DataType, pandas_engine.DataType],
-    strategy: Optional[SearchStrategy] = None,
+    pandera_dtype: numpy_engine.DataType | pandas_engine.DataType,
+    strategy: SearchStrategy | None = None,
     *,
-    min_value: Union[int, float],
-    max_value: Union[int, float],
+    min_value: int | float,
+    max_value: int | float,
     include_min: bool = True,
     include_max: bool = True,
 ) -> SearchStrategy:
@@ -598,8 +594,8 @@ def in_range_strategy(
 
 
 def isin_strategy(
-    pandera_dtype: Union[numpy_engine.DataType, pandas_engine.DataType],
-    strategy: Optional[SearchStrategy] = None,
+    pandera_dtype: numpy_engine.DataType | pandas_engine.DataType,
+    strategy: SearchStrategy | None = None,
     *,
     allowed_values: Sequence[Any],
 ) -> SearchStrategy:
@@ -619,8 +615,8 @@ def isin_strategy(
 
 
 def notin_strategy(
-    pandera_dtype: Union[numpy_engine.DataType, pandas_engine.DataType],
-    strategy: Optional[SearchStrategy] = None,
+    pandera_dtype: numpy_engine.DataType | pandas_engine.DataType,
+    strategy: SearchStrategy | None = None,
     *,
     forbidden_values: Sequence[Any],
 ) -> SearchStrategy:
@@ -638,8 +634,8 @@ def notin_strategy(
 
 
 def str_matches_strategy(
-    pandera_dtype: Union[numpy_engine.DataType, pandas_engine.DataType],
-    strategy: Optional[SearchStrategy] = None,
+    pandera_dtype: numpy_engine.DataType | pandas_engine.DataType,
+    strategy: SearchStrategy | None = None,
     *,
     pattern: str,
 ) -> SearchStrategy:
@@ -663,8 +659,8 @@ def str_matches_strategy(
 
 
 def str_contains_strategy(
-    pandera_dtype: Union[numpy_engine.DataType, pandas_engine.DataType],
-    strategy: Optional[SearchStrategy] = None,
+    pandera_dtype: numpy_engine.DataType | pandas_engine.DataType,
+    strategy: SearchStrategy | None = None,
     *,
     pattern: str,
 ) -> SearchStrategy:
@@ -688,8 +684,8 @@ def str_contains_strategy(
 
 
 def str_startswith_strategy(
-    pandera_dtype: Union[numpy_engine.DataType, pandas_engine.DataType],
-    strategy: Optional[SearchStrategy] = None,
+    pandera_dtype: numpy_engine.DataType | pandas_engine.DataType,
+    strategy: SearchStrategy | None = None,
     *,
     string: str,
 ) -> SearchStrategy:
@@ -710,8 +706,8 @@ def str_startswith_strategy(
 
 
 def str_endswith_strategy(
-    pandera_dtype: Union[numpy_engine.DataType, pandas_engine.DataType],
-    strategy: Optional[SearchStrategy] = None,
+    pandera_dtype: numpy_engine.DataType | pandas_engine.DataType,
+    strategy: SearchStrategy | None = None,
     *,
     string: str,
 ) -> SearchStrategy:
@@ -732,8 +728,8 @@ def str_endswith_strategy(
 
 
 def str_length_strategy(
-    pandera_dtype: Union[numpy_engine.DataType, pandas_engine.DataType],
-    strategy: Optional[SearchStrategy] = None,
+    pandera_dtype: numpy_engine.DataType | pandas_engine.DataType,
+    strategy: SearchStrategy | None = None,
     *,
     min_value: int,
     max_value: int,
@@ -767,10 +763,10 @@ def _timestamp_to_datetime64_strategy(
 
 
 def field_element_strategy(
-    pandera_dtype: Union[numpy_engine.DataType, pandas_engine.DataType],
-    strategy: Optional[SearchStrategy] = None,
+    pandera_dtype: numpy_engine.DataType | pandas_engine.DataType,
+    strategy: SearchStrategy | None = None,
     *,
-    checks: Optional[Sequence] = None,
+    checks: Sequence | None = None,
 ) -> SearchStrategy:
     """Strategy to generate elements of a column or index.
 
@@ -823,14 +819,14 @@ def field_element_strategy(
 
 
 def series_strategy(
-    pandera_dtype: Union[numpy_engine.DataType, pandas_engine.DataType],
-    strategy: Optional[SearchStrategy] = None,
+    pandera_dtype: numpy_engine.DataType | pandas_engine.DataType,
+    strategy: SearchStrategy | None = None,
     *,
-    checks: Optional[Sequence] = None,
+    checks: Sequence | None = None,
     nullable: bool = False,
     unique: bool = False,
-    name: Optional[str] = None,
-    size: Optional[int] = None,
+    name: str | None = None,
+    size: int | None = None,
 ) -> SearchStrategy:
     """Strategy to generate a pandas Series.
 
@@ -898,12 +894,12 @@ def series_strategy(
 
 
 def column_strategy(
-    pandera_dtype: Union[numpy_engine.DataType, pandas_engine.DataType],
-    strategy: Optional[SearchStrategy] = None,
+    pandera_dtype: numpy_engine.DataType | pandas_engine.DataType,
+    strategy: SearchStrategy | None = None,
     *,
-    checks: Optional[Sequence] = None,
+    checks: Sequence | None = None,
     unique: bool = False,
-    name: Optional[str] = None,
+    name: str | None = None,
 ):
     # pylint: disable=line-too-long
     """Create a data object describing a column in a DataFrame.
@@ -928,14 +924,14 @@ def column_strategy(
 
 
 def index_strategy(
-    pandera_dtype: Union[numpy_engine.DataType, pandas_engine.DataType],
-    strategy: Optional[SearchStrategy] = None,
+    pandera_dtype: numpy_engine.DataType | pandas_engine.DataType,
+    strategy: SearchStrategy | None = None,
     *,
-    checks: Optional[Sequence] = None,
+    checks: Sequence | None = None,
     nullable: bool = False,
     unique: bool = False,
-    name: Optional[str] = None,
-    size: Optional[int] = None,
+    name: str | None = None,
+    size: int | None = None,
 ):
     """Strategy to generate a pandas Index.
 
@@ -975,14 +971,14 @@ def index_strategy(
 
 
 def dataframe_strategy(
-    pandera_dtype: Optional[DataType] = None,
-    strategy: Optional[SearchStrategy] = None,
+    pandera_dtype: DataType | None = None,
+    strategy: SearchStrategy | None = None,
     *,
-    columns: Optional[Dict] = None,
-    checks: Optional[Sequence] = None,
-    unique: Optional[List[str]] = None,
-    index: Optional[IndexComponent] = None,
-    size: Optional[int] = None,
+    columns: dict | None = None,
+    checks: Sequence | None = None,
+    unique: list[str] | None = None,
+    index: IndexComponent | None = None,
+    size: int | None = None,
     n_regex_columns: int = 1,
 ):
     """Strategy to generate a pandas DataFrame.
@@ -1117,7 +1113,7 @@ def dataframe_strategy(
                     )
 
         # collect all non-element-wise column checks with undefined strategies
-        undefined_strat_column_checks: Dict[str, list] = defaultdict(list)
+        undefined_strat_column_checks: dict[str, list] = defaultdict(list)
         for col_name, column in expanded_columns.items():
             undefined_strat_column_checks[col_name].extend(
                 check
@@ -1202,11 +1198,11 @@ def dataframe_strategy(
 
 # pylint: disable=unused-argument
 def multiindex_strategy(
-    pandera_dtype: Optional[DataType] = None,
-    strategy: Optional[SearchStrategy] = None,
+    pandera_dtype: DataType | None = None,
+    strategy: SearchStrategy | None = None,
     *,
-    indexes: Optional[List] = None,
-    size: Optional[int] = None,
+    indexes: list | None = None,
+    size: int | None = None,
 ):
     """Strategy to generate a pandas MultiIndex object.
 

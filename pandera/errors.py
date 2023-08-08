@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import warnings
 from enum import Enum
-from typing import Any, Dict, List, NamedTuple
+from typing import Any, NamedTuple
 
 
 class BackendNotFoundError(Exception):
@@ -19,7 +19,7 @@ class ReducedPickleExceptionBase(Exception):
     string via `TO_STRING_KEYS`.
     """
 
-    TO_STRING_KEYS: List[str] = []
+    TO_STRING_KEYS: list[str] = []
 
     def __reduce__(self):
         """Exception.__reduce__ is incompatible. Override with custom layout.
@@ -132,7 +132,7 @@ class FailureCaseMetadata(NamedTuple):
 
     failure_cases: Any
     message: str
-    error_counts: Dict[str, int]
+    error_counts: dict[str, int]
 
 
 class SchemaErrorReason(Enum):
@@ -170,7 +170,7 @@ class SchemaErrors(ReducedPickleExceptionBase):
     def __init__(
         self,
         schema,
-        schema_errors: List[SchemaError],
+        schema_errors: list[SchemaError],
         data: Any,
     ):
         self.schema = schema
